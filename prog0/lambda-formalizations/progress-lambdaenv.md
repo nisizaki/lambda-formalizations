@@ -208,12 +208,26 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `SigmaNormalForm.normal`.
 - `SigmaNormalForm.of_steps_normal`.
 - `SigmaNormal.normal_form_self`.
+- `Confluent`.
+- `newman`.
+- `SigmaStep.confluent`.
+- `NormalFor.eq_of_reflTransGen`.
+- `SigmaNormal.eq_of_steps`.
+- `SigmaNormalForm.unique`.
+- `sigmaNormalize`.
+- `sigmaNormalize_normalForm`.
+- `sigmaNormalize_steps`.
+- `sigmaNormalize_normal`.
+- `sigmaNormalize_eq_of_normalForm`.
+- `sigmaNormalize_eq_of_normal`.
+- `SigmaSteps.to_normalForm`.
+- `sigmaNormalize_eq_of_steps`.
+- `sigmaNormalize_eq_of_step`.
 
 ## In progress
 
-- Continue after sigma local confluence by researching or proving Newman-style
-  confluence, then derive sigma confluence, unique sigma normal forms, and
-  `sigmaNormalize`.
+- Continue with later sigma-normal syntactic characterization and downstream
+  star/parallel reduction sections.
 
 ## Reduction relations audit
 
@@ -301,22 +315,39 @@ completed slices are `section "Raw terms and length"`, most basic material from
 ## Completed confluence results
 
 - Local confluence is complete: `SigmaStep.locallyConfluent`.
-- Newman-style global confluence is still pending.
+- Newman-style global confluence is complete through the general theorem
+  `newman`.
+- Sigma confluence is complete: `SigmaStep.confluent`.
 
 ## Newman lemma design
 
-- Not implemented yet.  The intended relation orientation is the existing
-  `Terminating r = WellFounded (fun N M => r M N)`, matching Isabelle
-  `wf {(N, M). r M N}`.  A Newman lemma should take this well-founded converse
-  direction plus `LocallyConfluent r` and return confluence for
+- Implemented locally as the general theorem `newman` in
+  `SigmaNormalization.lean`; Mathlib has `Relation.church_rosser`, but not a
+  directly matching terminating plus local-confluence Newman theorem.
+- The well-founded relation orientation is
+  `WellFounded (fun N M => r M N)`, matching the existing
+  `Terminating r` and Isabelle's `wf {(N, M). r M N}`.
+- The conclusion is `Confluent r`, i.e. common-source
+  `Relation.ReflTransGen r` branches are joinable by
   `Relation.ReflTransGen r`.
 
 ## Sigma normalization design
 
 - `SigmaNormalForm.exists` is constructive from `SigmaStep.terminating`.
-- `sigmaNormalize` is not defined yet.  It should be introduced only after
-  sigma confluence gives uniqueness, and will likely be `noncomputable` via
-  `Classical.choose`, matching Isabelle's `THE` operator.
+- `sigmaNormalize` is defined after confluence and uniqueness as a
+  `noncomputable def` using `Classical.choose (SigmaNormalForm.exists M)`.
+- This mirrors Isabelle's `THE`-based `sigma_normalize`: existence supplies a
+  representative, and `SigmaNormalForm.unique` proves the representative is
+  independent of the choice.
+
+## Completed normal form uniqueness results
+
+- `NormalFor.eq_of_reflTransGen`: a normal element can only reduce by
+  reflexive-transitive closure to itself.
+- `SigmaNormal.eq_of_steps`: sigma-normal terms have only reflexive sigma
+  multi-step reducts.
+- `SigmaNormalForm.unique`: sigma normal forms from the same source are unique,
+  using `SigmaStep.confluent`.
 
 ## Remaining Isabelle sections
 
@@ -411,6 +442,19 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `sigma_peak_Ass` ↔ `SigmaLocalPeak.ass`
 - `sigma_step_local_peak_joinable` ↔ `SigmaStep.local_peak_joinable`
 - `sigma_step_locally_confluent` ↔ `SigmaStep.locallyConfluent`
+- `confluentp` ↔ `Confluent`
+- `newman_lemma` ↔ `newman`
+- `sigma_step_confluent` ↔ `SigmaStep.confluent`
+- `unique_normal_form` / `sigma_normal_form_unique` ↔
+  `SigmaNormalForm.unique`
+- `sigma_normalize` ↔ `sigmaNormalize`
+- `sigma_nf_normal_form` ↔ `sigmaNormalize_normalForm`
+- `sigma_nf_steps` ↔ `sigmaNormalize_steps`
+- `sigma_nf_normal` ↔ `sigmaNormalize_normal`
+- `sigma_normalize_eq_if_normal_form` ↔
+  `sigmaNormalize_eq_of_normalForm`
+- `sigma_normalize_eq_of_sigma_steps` ↔
+  `sigmaNormalize_eq_of_steps`
 
 ## Build status
 
