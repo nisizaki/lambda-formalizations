@@ -183,6 +183,9 @@ completed slices are `section "Raw terms and length"`, most basic material from
   `varRef_left`, `varRef_right`,
   `varSkip_left`, `varSkip_right`,
   `distApp_left`, `distApp_mid`, `distApp_right`.
+- Root/compatibility packaged peaks:
+  `SigmaLocalPeak.varRef_inner`, `varSkip_inner`,
+  `idLeft`, `idRight`, `varRef`, `varSkip`.
 - `SigmaStep.toWeakStep`.
 - `BetaStep.toWeakStep`.
 - `WeakStep.sigma_or_beta`.
@@ -200,8 +203,8 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 - Continue `Reduction relations` with local confluence support:
   nested root-vs-compatibility peaks under associativity, extension
-  distribution, and application distribution, then the remaining local peak case
-  split.
+  distribution, and application distribution, plus packaged `Ass`, `DExtn`,
+  and `DApp` root-vs-step lemmas.
 - Continue `Sigma reduction` with joinability lemmas for root-vs-compatibility
   peaks, then connect local confluence to Newman-style confluence before adding
   unique sigma normalization.
@@ -359,6 +362,12 @@ completed slices are `section "Raw terms and length"`, most basic material from
   `SigmaLocalPeak.varSkip_left/right`
 - `sigma_peak_DApp_left/mid/right` ↔
   `SigmaLocalPeak.distApp_left/mid/right`
+- `sigma_peak_VarRef_inner` ↔ `SigmaLocalPeak.varRef_inner`
+- `sigma_peak_VarSkip_inner` ↔ `SigmaLocalPeak.varSkip_inner`
+- `sigma_peak_IdL` ↔ `SigmaLocalPeak.idLeft`
+- `sigma_peak_IdR` ↔ `SigmaLocalPeak.idRight`
+- `sigma_peak_VarRef` ↔ `SigmaLocalPeak.varRef`
+- `sigma_peak_VarSkip` ↔ `SigmaLocalPeak.varSkip`
 
 ## Build status
 
