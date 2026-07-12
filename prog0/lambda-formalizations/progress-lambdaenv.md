@@ -705,6 +705,45 @@ results.  The top-level strong-induction theorem remains to be added.
   `sigmaNormalize_eq_of_steps`.
 - Status: complete; required by the general beta2 nested composition case.
 
+## Lambda composition environment normalization
+
+### sigma_normalize_lamcomp_env_id
+
+- Isabelle statement: if `U`, `W`, and `V` are sigma-normal and
+  `sigma_normalize (TComp W V) = TId`, then normalizing
+  `TComp (TComp (TLam x U) W) V` yields `TLam x U`.
+- Lean statement: `sigma_normalize_lamcomp_env_id` with
+  `hEnv : sigmaNormalize (.comp W E) = .id`.
+- identity condition: on the normalized composite environment.
+- proof method: reassociate the outer composition, normalize the right
+  environment, then eliminate the right identity composition.
+- supporting lemmas: `sigma_normalize_comp_comp`,
+  `sigmaNormalize_comp_right_normalize`, and
+  `sigma_normalize_comp_id_right`.
+- status: complete.
+
+### sigma_normalize_lamcomp_env_non_id
+
+- Isabelle statement: if `U`, `W`, and `V` are sigma-normal and
+  `sigma_normalize (TComp W V) ~= TId`, then normalizing
+  `TComp (TComp (TLam x U) W) V` yields
+  `TComp (TLam x U) (sigma_normalize (TComp W V))`.
+- Lean statement: `sigma_normalize_lamcomp_env_non_id` with
+  `hEnv : sigmaNormalize (.comp W E) ≠ .id`.
+- non-identity condition: on the normalized composite environment.
+- proof method: reassociate and normalize the right environment; the resulting
+  lambda composition is sigma-normal, so `sigmaNormalize_eq_of_normal` closes
+  the equality.
+- supporting lemmas: `sigma_normalize_comp_comp`,
+  `sigmaNormalize_comp_right_normalize`, `sigma_normal_TComp_lam_iff`, and
+  `sigmaNormalize_normal`.
+- status: complete.
+
+### Required by
+
+- `ParStep.sigma_comp_beta2`
+- Lemma 3.11 beta2 case
+
 ## Lemma 3.13 star theorem
 
 ### Isabelle statement

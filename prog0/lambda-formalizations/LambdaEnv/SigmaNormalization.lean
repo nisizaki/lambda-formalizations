@@ -546,4 +546,23 @@ theorem sigma_normalize_comp_beta2_target {U A W E : Trm V} {x : V}
   have rEq : sigmaNormalize R = sigmaNormalize M := (sigmaNormalize_eq_of_steps mR).symm
   exact nEq.trans rEq.symm
 
+theorem sigma_normalize_lamcomp_env_id {U W E : Trm V} {x : V}
+    (nU : SigmaNormal U) (nW : SigmaNormal W) (nE : SigmaNormal E)
+    (hEnv : sigmaNormalize (.comp W E) = .id) :
+    sigmaNormalize (.comp (.comp (.lam x U) W) E) = .lam x U := by
+  rw [sigma_normalize_comp_comp (sigma_normal_lam nU) nW nE,
+    ← sigmaNormalize_comp_right_normalize,
+    hEnv,
+    sigma_normalize_comp_id_right (sigma_normal_lam nU)]
+
+theorem sigma_normalize_lamcomp_env_non_id {U W E : Trm V} {x : V}
+    (nU : SigmaNormal U) (nW : SigmaNormal W) (nE : SigmaNormal E)
+    (hEnv : sigmaNormalize (.comp W E) ≠ .id) :
+    sigmaNormalize (.comp (.comp (.lam x U) W) E) =
+      .comp (.lam x U) (sigmaNormalize (.comp W E)) := by
+  rw [sigma_normalize_comp_comp (sigma_normal_lam nU) nW nE,
+    ← sigmaNormalize_comp_right_normalize]
+  exact sigmaNormalize_eq_of_normal
+    (sigma_normal_TComp_lam_iff.mpr ⟨nU, sigmaNormalize_normal _, hEnv⟩)
+
 end LambdaEnv
