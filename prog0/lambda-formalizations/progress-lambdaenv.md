@@ -987,3 +987,74 @@ confluence result.
 - Last checked: 2026-07-13 Asia/Tokyo
 
 <!-- Codex continuation checkpoint -->
+
+## Weak reduction
+
+### Existing WeakStep and WeakSteps definitions
+
+- Isabelle: `weak_step` and `rtranclp weak_step`.
+- Lean: `WeakStep` and `WeakSteps` in `LambdaEnv/Reduction.lean`; they retain
+  the root sigma/beta rules and the app, lambda, composition, and extension
+  compatibility rules (including descent under lambda).
+
+### par_step_subset_weak_steps
+
+- Isabelle: `par_step_subset_weak_steps`.
+- Lean: `parStep_subset_weakSteps : ParStep M N -> WeakSteps M N`.
+- Proof: induction over all twelve `ParStep` constructors, using new
+  `WeakSteps` contextual lifting lemmas and sigma-normalization tails for the
+  normalized targets of `varCompOther`, `beta1`, and `beta2`.
+
+### beta_mod_sigma_rel_subset_weak_steps
+
+- Isabelle: `beta_mod_sigma_rel_subset_weak_steps`.
+- Lean: `betaModSigmaRel_subset_weakSteps : BetaModSigmaRel M N -> WeakSteps M N`.
+- Uses `betaModSigmaRel_imp_parStep` followed by `parStep_subset_weakSteps`.
+
+### weak_step_lift_to_beta_mod_sigma
+
+- Isabelle: `weak_step_lift_to_beta_mod_sigma`.
+- Lean: `weakStep_lift_to_betaModSigma : WeakStep M N ->
+  BetaModSigmaSteps (sigmaNormalize M) (sigmaNormalize N)`.
+- Sigma branches use `sigmaNormalize_eq_of_step`; beta branches use
+  `betaStep_to_parStep_normalized` followed by
+  `parStep_subset_betaModSigmaSteps`.
+
+### Hardin general lemma
+
+- Isabelle: `hardin_forward_confluence`.
+- Lean: `hardin_forward_confluence`.
+- It transports confluence of `rp` to `r` from normalization reachability,
+  step lifting to `rp`, and inclusion `rp ⊆ r*`.  The reusable helper lemmas
+  are `reflTransGen_lift_by_steps` and
+  `reflTransGen_lift_by_normalization`.
+
+### theorem_3_16_weak_step_confluent
+
+- Isabelle: `theorem_3_16_weak_step_confluent`.
+- Lean: `theorem_3_16_weakStep_confluent : Confluent (@WeakStep α)`.
+- Instantiates Hardin with `r = WeakStep`, `rp = BetaModSigmaRel`, and
+  `nf = sigmaNormalize`, using `BetaModSigmaRel.confluent`.
+
+### weak_step_confluent
+
+- Isabelle: `weak_step_confluent`.
+- Lean: `weakStep_confluent : Confluent (@WeakStep α)`.
+- Direct alias of the Lean Theorem 3.16 result.
+
+### Isabelle to Lean correspondence
+
+- Isabelle snake-case theorem names are represented by Lean camelCase names;
+  the comments on the corresponding declarations give the direct mapping.
+- Relations retain the original direction.  `WeakSteps` and
+  `BetaModSigmaSteps` are `Relation.ReflTransGen` closures.
+
+### Remaining work
+
+- Weak-reduction confluence is complete.  The subsequent Isabelle sections,
+  if any, remain outside this milestone.
+
+### Build status
+
+- `lake env lean LambdaEnv/WeakReduction.lean`: success.
+- `lake build`: success.
