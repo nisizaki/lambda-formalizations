@@ -476,4 +476,43 @@ theorem sigma_normalize_comp_var_not_ext {x : V} {W : Trm V}
     sigmaNormalize (.comp (.var x) W) = .comp (.var x) W :=
   sigmaNormalize_eq_of_normal (sigma_normal_TComp_var_iff.mpr ⟨nW, hNotExt, hW⟩)
 
+theorem sigma_normalize_comp_beta1_target_id {U A : Trm V} {x : V}
+    (nU : SigmaNormal U) (nA : SigmaNormal A) :
+    sigmaNormalize (.comp (sigmaNormalize (.comp U (.ext A x .id))) .id) =
+      sigmaNormalize (.comp U (.ext A x .id)) :=
+  sigma_normalize_comp_id_right (sigmaNormalize_normal _)
+
+theorem sigma_normalize_comp_beta1_target_non_id {U A E : Trm V} {x : V}
+    (nU : SigmaNormal U) (nA : SigmaNormal A) (nE : SigmaNormal E) (hE : E ≠ .id) :
+    sigmaNormalize (.comp (sigmaNormalize (.comp U (.ext A x .id))) E) =
+      sigmaNormalize (.comp U (.ext (sigmaNormalize (.comp A E)) x E)) := by
+  let K : Trm V := .comp U (.ext A x .id)
+  let M : Trm V := .comp K E
+  let N : Trm V := .comp (sigmaNormalize K) E
+  let R : Trm V := .comp U (.ext (sigmaNormalize (.comp A E)) x E)
+  have mN : SigmaSteps M N := by
+    exact SigmaSteps.comp_left (sigmaNormalize_steps K)
+  have rootAss : SigmaSteps M (.comp U (.comp (.ext A x .id) E)) :=
+    SigmaStep.toSteps (SigmaStep.ass U (.ext A x .id) E)
+  have rootExt : SigmaSteps (.comp (.ext A x .id) E)
+      (.ext (.comp A E) x (.comp .id E)) :=
+    SigmaStep.toSteps (SigmaStep.distExt A x .id E)
+  have sExt : SigmaSteps (.comp U (.comp (.ext A x .id) E))
+      (.comp U (.ext (.comp A E) x (.comp .id E))) :=
+    SigmaSteps.comp_right rootExt
+  have sA : SigmaSteps (.comp A E) (sigmaNormalize (.comp A E)) := sigmaNormalize_steps _
+  have sId : SigmaSteps (.comp .id E) E := SigmaStep.toSteps (SigmaStep.idLeft E)
+  have sLeft : SigmaSteps (.ext (.comp A E) x (.comp .id E))
+      (.ext (sigmaNormalize (.comp A E)) x (.comp .id E)) :=
+    SigmaSteps.ext_left x sA
+  have sRight : SigmaSteps (.ext (sigmaNormalize (.comp A E)) x (.comp .id E))
+      (.ext (sigmaNormalize (.comp A E)) x E) :=
+    SigmaSteps.ext_right x sId
+  have mR : SigmaSteps M R :=
+    SigmaSteps.trans rootAss (SigmaSteps.trans sExt
+      (SigmaSteps.comp_right (SigmaSteps.trans sLeft sRight)))
+  have nEq : sigmaNormalize N = sigmaNormalize M := (sigmaNormalize_eq_of_steps mN).symm
+  have rEq : sigmaNormalize R = sigmaNormalize M := (sigmaNormalize_eq_of_steps mR).symm
+  exact nEq.trans rEq.symm
+
 end LambdaEnv

@@ -661,6 +661,38 @@ results.  The top-level strong-induction theorem remains to be added.
   intended decrease proof when assembling the outer strong induction.
 - build status: success.
 
+## Beta1 target sigma normalization
+
+### sigma_normalize_comp_beta1_target_id
+
+- Isabelle statement: normalizing the composition of the beta1 target with
+  `TId` returns the beta1 target.
+- Lean statement: `sigma_normalize_comp_beta1_target_id`.
+- proof method: `sigma_normalize_comp_id_right` and normality of
+  `sigmaNormalize`.
+- supporting lemmas: `sigma_normalize_comp_id_right`, `sigmaNormalize_normal`.
+- status: complete.
+
+### sigma_normalize_comp_beta1_target_non_id
+
+- Isabelle statement: normalizing the beta1 target composed with a nonidentity
+  environment equals the corresponding extension whose argument/environment
+  composition is normalized.
+- Lean statement: `sigma_normalize_comp_beta1_target_non_id`.
+- non-identity condition: `E ≠ Trm.id` (retained from Isabelle; the derived
+  sigma-step equality itself is valid without strengthening assumptions).
+- proof method: explicit sigma multi-step paths using associativity,
+  extension distribution, identity-left, and contextual closure; both sides
+  are related to the same source with `sigmaNormalize_eq_of_steps`.
+- supporting lemmas: `SigmaSteps.comp_left`, `comp_right`, `ext_left`,
+  `ext_right`, `sigmaNormalize_steps`, `sigmaNormalize_eq_of_steps`.
+- status: complete.
+
+### Required by
+
+- `ParStep.sigma_comp_beta1`
+- Lemma 3.11 beta1 case
+
 ## Lemma 3.13 star theorem
 
 ### Isabelle statement
