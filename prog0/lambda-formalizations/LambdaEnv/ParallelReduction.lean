@@ -386,6 +386,14 @@ theorem ParStep.sigma_comp_varcomp {W W' E E' : Trm V} {x : V}
   rw [lhs, rhs]
   exact ParStep.sigma_comp_var ih
 
+theorem ParStep.sigma_comp_beta1_id {U U' N N' : Trm V} {x : V}
+    (hU : ParStep U U') (hN : ParStep N N') :
+    ParStep (sigmaNormalize (.comp (.app (.lam x U) N) .id))
+      (sigmaNormalize (.comp (sigmaNormalize (.comp U' (.ext N' x .id))) .id)) := by
+  rw [sigma_normalize_comp_id_right (sigma_normal_app (sigma_normal_lam hU.source_normal) hN.source_normal),
+    sigma_normalize_comp_id_right (sigmaNormalize_normal _)]
+  exact ParStep.beta1 hU hN
+
 theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
   let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
   have aux : ∀ n, P n := by
