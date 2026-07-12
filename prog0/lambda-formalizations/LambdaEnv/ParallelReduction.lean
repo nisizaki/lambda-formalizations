@@ -645,4 +645,178 @@ theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
                 hNotExt hNotExt hBne hBne
   exact aux (Trm.length M) M rfl normal
 
+/-- Isabelle Lemma 3.13: every parallel reduct reduces in parallel to the
+star transform of its source. -/
+theorem ParStep.to_star {M N : Trm V} (step : ParStep M N) : ParStep N M.star := by
+  let P : Nat → Prop := fun n => ∀ {M N : Trm V}, Trm.length M = n →
+    ParStep M N → ParStep N M.star
+  have aux : ∀ n, P n := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | h n ih =>
+        intro M N hlen step
+        cases step with
+        | var x =>
+            exact ParStep.var x
+        | @lam U U' x hU =>
+            have lenU : Trm.length U < n := by
+              rw [← hlen]
+              simp [Trm.length]
+              nlinarith [Trm.length_pos U]
+            exact ParStep.lam (ih _ lenU rfl hU)
+        | @app A A' B B' hA hB =>
+            have lenA : Trm.length A < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            have lenB : Trm.length B < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            have ihB : ParStep B' B.star := ih _ lenB rfl hB
+            cases A with
+            | var x =>
+                exact ParStep.app (ih _ lenA rfl hA) ihB
+            | lam x U =>
+                rcases hA.lam_cases with ⟨U', rfl, hU⟩
+                have lenU : Trm.length U < n := by
+                  rw [← hlen]
+                  simp [Trm.length]
+                  omega
+                exact ParStep.beta1 (ih _ lenU rfl hU) ihB
+            | app A₁ A₂ =>
+                exact ParStep.app (ih _ lenA rfl hA) ihB
+            | id =>
+                exact ParStep.app (ih _ lenA rfl hA) ihB
+            | ext A₁ x A₂ =>
+                exact ParStep.app (ih _ lenA rfl hA) ihB
+            | comp C W =>
+                cases C with
+                | lam x U =>
+                    rcases hA.comp_lam_cases with
+                      ⟨U', W', rfl, hU, hW, hWne, hW'ne⟩ |
+                      ⟨U', rfl, hU, hW, hWne⟩
+                    · have lenU : Trm.length U < n := by
+                        rw [← hlen]
+                        simp [Trm.length]
+                        nlinarith [Trm.length_pos U, Trm.length_pos W,
+                          Trm.length_pos B]
+                      have lenW : Trm.length W < n := by
+                        rw [← hlen]
+                        have h₁ := Trm.length_right_lt_comp (.lam x U) W
+                        simp [Trm.length] at *
+                        omega
+                      exact ParStep.beta2 hW'ne (ih _ lenU rfl hU) ihB
+                        (ih _ lenW rfl hW)
+                    · have lenU : Trm.length U < n := by
+                        rw [← hlen]
+                        simp [Trm.length]
+                        nlinarith [Trm.length_pos U, Trm.length_pos W,
+                          Trm.length_pos B]
+                      have lenW : Trm.length W < n := by
+                        rw [← hlen]
+                        have h₁ := Trm.length_right_lt_comp (.lam x U) W
+                        simp [Trm.length] at *
+                        omega
+                      have ihW : ParStep .id W.star := ih _ lenW rfl hW
+                      have Wstar : W.star = .id := ihW.id_cases
+                      simpa [Trm.star, Wstar] using
+                        (ParStep.beta1 (ih _ lenU rfl hU) ihB)
+                | var x =>
+                    exact ParStep.app (ih _ lenA rfl hA) ihB
+                | app C₁ C₂ =>
+                    exact ParStep.app (ih _ lenA rfl hA) ihB
+                | id =>
+                    exact ParStep.app (ih _ lenA rfl hA) ihB
+                | ext C₁ x C₂ =>
+                    exact ParStep.app (ih _ lenA rfl hA) ihB
+                | comp C₁ C₂ =>
+                    exact ParStep.app (ih _ lenA rfl hA) ihB
+        | id =>
+            exact ParStep.id
+        | @ext U U' E E' x hU hE =>
+            have lenU : Trm.length U < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            have lenE : Trm.length E < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            exact ParStep.ext (ih _ lenU rfl hU) (ih _ lenE rfl hE)
+        | @lamComp U U' W W' x hU hW hWne hW'ne =>
+            have lenU : Trm.length U < n := by
+              rw [← hlen]
+              simp [Trm.length]
+              nlinarith [Trm.length_pos U, Trm.length_pos W]
+            have lenW : Trm.length W < n := by
+              rw [← hlen]
+              exact Trm.length_right_lt_comp (.lam x U) W
+            have result := ParStep.sigma_comp (ParStep.lam (x := x) (ih _ lenU rfl hU))
+              (ih _ lenW rfl hW)
+            rw [sigmaNormalize_eq_of_normal
+              (sigma_normal_TComp_lam_iff.mpr
+                ⟨hU.target_normal, hW.target_normal, hW'ne⟩)] at result
+            exact result
+        | @lamCompId U U' W x hU hW hWne =>
+            have lenU : Trm.length U < n := by
+              rw [← hlen]
+              simp [Trm.length]
+              nlinarith [Trm.length_pos U, Trm.length_pos W]
+            have lenW : Trm.length W < n := by
+              rw [← hlen]
+              exact Trm.length_right_lt_comp (.lam x U) W
+            have ihW : ParStep .id W.star := ih _ lenW rfl hW
+            have Wstar : W.star = .id := ihW.id_cases
+            rw [term_star_lam_comp, Wstar,
+              sigma_normalize_comp_id_right
+                (sigma_normal_lam (term_star_sigma_normal hU.source_normal))]
+            exact ParStep.lam (ih _ lenU rfl hU)
+        | @varComp W W' x hW hNotExt hNotExt' hWne hW'ne =>
+            have lenW : Trm.length W < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            have result := ParStep.sigma_comp (ParStep.var x) (ih _ lenW rfl hW)
+            rw [sigmaNormalize_eq_of_normal
+              (sigma_normal_TComp_var_iff.mpr
+                ⟨hW.target_normal, hNotExt', hW'ne⟩)] at result
+            exact result
+        | @varCompOther W W' x hW hNotExt hNotExt' hWne hW'ne =>
+            have lenW : Trm.length W < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            exact ParStep.sigma_comp (ParStep.var x) (ih _ lenW rfl hW)
+        | @varCompId W x hW hNotExt hWne =>
+            have lenW : Trm.length W < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            have ihW : ParStep .id W.star := ih _ lenW rfl hW
+            have Wstar : W.star = .id := ihW.id_cases
+            rw [term_star_var_comp, Wstar,
+              sigma_normalize_comp_id_right (sigma_normal_TVar x)]
+            exact ParStep.var x
+        | @beta1 U U' A A' x hU hA =>
+            have lenU : Trm.length U < n := by
+              rw [← hlen]
+              simp [Trm.length]
+              omega
+            have lenA : Trm.length A < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            exact ParStep.sigma_comp (ih _ lenU rfl hU)
+              (ParStep.ext (ih _ lenA rfl hA) ParStep.id)
+        | @beta2 W U U' A A' W' x hWne hU hA hW =>
+            have lenU : Trm.length U < n := by
+              rw [← hlen]
+              simp [Trm.length]
+              nlinarith [Trm.length_pos U, Trm.length_pos W,
+                Trm.length_pos A]
+            have lenA : Trm.length A < n := by
+              rw [← hlen]
+              simp [Trm.length]
+            have lenW : Trm.length W < n := by
+              rw [← hlen]
+              have h₁ := Trm.length_right_lt_comp (.lam x U) W
+              simp [Trm.length] at *
+              omega
+            exact ParStep.sigma_comp (ih _ lenU rfl hU)
+              (ParStep.ext (ih _ lenA rfl hA) (ih _ lenW rfl hW))
+  exact aux _ rfl step
+
 end LambdaEnv

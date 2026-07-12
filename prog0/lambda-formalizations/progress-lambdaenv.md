@@ -812,20 +812,53 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 ### Lean statement
 
-The intended theorem is `ParStep.to_star`; it is not yet implemented.
+`ParStep.to_star`:
+
+```lean
+theorem ParStep.to_star (h : ParStep M N) : ParStep N M.star
+```
+
+This corresponds directly to Isabelle `lemma_3_13_par_step_to_star`.
 
 ### Dependencies
 
 `term_star_sigma_normal`, `sigma_normalize_term_star_eq`, and the complete
 `ParStep.sigma_comp` theorem.
 
-### Completed cases
+### Constructor cases
 
-Only the prerequisites above.
+- var: `ParStep.var`.
+- lam: the body induction result lifted by `ParStep.lam`.
+- app: function-shape split; ordinary forms use `ParStep.app`, while lambda
+  and lambda-composition forms reconstruct `beta1` or `beta2`.
+- id: `ParStep.id`.
+- ext: both induction results lifted by `ParStep.ext`.
+- lamComp: body/environment induction results composed using
+  `ParStep.sigma_comp`.
+- lamCompId: the environment induction result forces `W.star = Trm.id`, then
+  the body result is lifted by `ParStep.lam`.
+- varComp: variable reflexivity and the environment result are combined by
+  `ParStep.sigma_comp`.
+- varCompOther: directly uses `ParStep.sigma_comp`.
+- varCompId: the environment result forces `W.star = Trm.id`.
+- beta1: body and extension results are combined by `ParStep.sigma_comp`.
+- beta2: body, argument, and environment results are combined by
+  `ParStep.sigma_comp`.
 
-### Remaining cases
+### Supporting lemmas
 
-All constructor cases, especially lambda/variable composition and beta1/beta2.
+`ParStep.id_cases`, `lam_cases`, `comp_lam_cases`, `term_star_lam_comp`,
+`term_star_var_comp`, `term_star_sigma_normal`, and the sigma-normalization
+equations for right identity.
+
+### Use of Lemma 3.11
+
+`ParStep.sigma_comp` supplies the common normalized composition target in
+`lamComp`, `varComp`, `varCompOther`, `beta1`, and `beta2` cases.
+
+### Build status
+
+Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 ## Parallel strong confluence
 
