@@ -368,4 +368,27 @@ theorem parSteps_subset_betaModSigmaSteps {M N : Trm α}
   | tail steps step ih =>
       exact Relation.ReflTransGen.trans ih (parStep_subset_betaModSigmaSteps step)
 
+theorem stronglyConfluent_strip {r : α → α → Prop} (diamond : StronglyConfluent r)
+    {a b c : α} (step : r a b) (steps : Relation.ReflTransGen r a c) :
+    ∃ d, Relation.ReflTransGen r b d ∧ r c d := by
+  induction steps generalizing b with
+  | refl => exact ⟨b, Relation.ReflTransGen.refl, step⟩
+  | tail steps stepYZ ih =>
+      rcases ih step with ⟨e, be, ye⟩
+      rcases diamond ye stepYZ with ⟨d, ed, zd⟩
+      exact ⟨d, Relation.ReflTransGen.tail be ed, zd⟩
+
+theorem stronglyConfluent_implies_confluent {r : α → α → Prop}
+    (diamond : StronglyConfluent r) : Confluent r := by
+  intro a b c ab ac
+  induction ac generalizing b with
+  | refl => exact ⟨b, Relation.ReflTransGen.refl, ab⟩
+  | tail ac stepYZ ih =>
+      rcases ih ab with ⟨d, bd, yd⟩
+      rcases stronglyConfluent_strip diamond stepYZ yd with ⟨e, ze, de⟩
+      exact ⟨e, Relation.ReflTransGen.tail bd de, ze⟩
+
+theorem ParStep.confluent : Confluent (@ParStep α) :=
+  stronglyConfluent_implies_confluent ParStep.stronglyConfluent
+
 end LambdaEnv

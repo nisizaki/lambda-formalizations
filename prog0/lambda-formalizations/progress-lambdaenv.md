@@ -931,8 +931,13 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 ### ParStep confluence
 
-- Pending: lift the completed `ParStep.stronglyConfluent` through
-  `Relation.ReflTransGen`.
+- General theorem: `stronglyConfluent_strip` and
+  `stronglyConfluent_implies_confluent` lift a one-step diamond to the
+  existing `Confluent` definition over `Relation.ReflTransGen`.
+- `ParStep.confluent : Confluent (@ParStep α)` is complete, corresponding to
+  Isabelle `par_step_confluent`.
+- The proof uses no extra hypotheses: the common one-step diamond is the
+  already-proved `ParStep.stronglyConfluent`.
 
 ### Isabelle to Lean correspondence
 
@@ -943,6 +948,8 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 - `lake env lean LambdaEnv/BetaModuloSigma.lean`: success.
 - `lake build`: success.
+- β modulo σ correspondence and `ParStep` confluence were completed in the
+  same follow-up slice after definition commit `c463251`.
 
 ## Current goal
 
@@ -951,9 +958,9 @@ confluence result.
 
 ## Remaining work
 
-- Derive ordinary confluence of `ParStep` when the reusable strong-confluence
-  to reflexive-transitive-confluence infrastructure is added.
-- Beta modulo sigma and the later Hardin interpretation remain.
+- β modulo σ and `ParStep` confluence are complete.
+- The later Isabelle sections remain: beta modulo σ confluence and Hardin's
+  interpretation for weak reduction.
 
 ## Build status
 
