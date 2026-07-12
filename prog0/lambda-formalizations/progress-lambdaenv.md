@@ -185,7 +185,9 @@ completed slices are `section "Raw terms and length"`, most basic material from
   `distApp_left`, `distApp_mid`, `distApp_right`.
 - Root/compatibility packaged peaks:
   `SigmaLocalPeak.varRef_inner`, `varSkip_inner`,
-  `idLeft`, `idRight`, `varRef`, `varSkip`.
+  `idLeft`, `idRight`, `varRef`, `varSkip`,
+  `distExt_inner`, `distExt`, `distApp_inner`, `distApp`.
+- Inversion helper: `SigmaStep.app_cases`.
 - `SigmaStep.toWeakStep`.
 - `BetaStep.toWeakStep`.
 - `WeakStep.sigma_or_beta`.
@@ -203,8 +205,8 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 - Continue `Reduction relations` with local confluence support:
   nested root-vs-compatibility peaks under associativity, extension
-  distribution, and application distribution, plus packaged `Ass`, `DExtn`,
-  and `DApp` root-vs-step lemmas.
+  distribution, and application distribution, plus packaged `Ass`
+  root-vs-step lemmas.
 - Continue `Sigma reduction` with joinability lemmas for root-vs-compatibility
   peaks, then connect local confluence to Newman-style confluence before adding
   unique sigma normalization.
@@ -239,7 +241,7 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - Joinable wrapper corresponding to `sigma_root_step_local_peak_joinablep`
   can now be a direct use of `SigmaRootStep.local_peak_joinable`.
 - Nested root-vs-compatibility peak lemmas from
-  `sigma_peak_Ass_inner_Ass` through `sigma_peak_DApp`, plus packaging lemmas
+  `sigma_peak_Ass_inner_Ass` through `sigma_peak_Ass`, plus packaging lemmas
   `sigma_root_vs_step_peak_joinable` and `sigma_step_vs_root_peak_joinable`.
 - Full step/step local peak decomposition:
   `sigma_step_local_peak_from_AppL`, `..._AppR`, `..._Lam`,
@@ -368,6 +370,11 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `sigma_peak_IdR` ↔ `SigmaLocalPeak.idRight`
 - `sigma_peak_VarRef` ↔ `SigmaLocalPeak.varRef`
 - `sigma_peak_VarSkip` ↔ `SigmaLocalPeak.varSkip`
+- `sigma_step_TApp_cases` partial counterpart ↔ `SigmaStep.app_cases`
+- `sigma_peak_DExtn_inner` ↔ `SigmaLocalPeak.distExt_inner`
+- `sigma_peak_DExtn` ↔ `SigmaLocalPeak.distExt`
+- `sigma_peak_DApp_inner` ↔ `SigmaLocalPeak.distApp_inner`
+- `sigma_peak_DApp` ↔ `SigmaLocalPeak.distApp`
 
 ## Build status
 
