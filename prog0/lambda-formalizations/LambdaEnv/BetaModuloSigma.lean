@@ -391,4 +391,14 @@ theorem stronglyConfluent_implies_confluent {r : α → α → Prop}
 theorem ParStep.confluent : Confluent (@ParStep α) :=
   stronglyConfluent_implies_confluent ParStep.stronglyConfluent
 
+theorem BetaModSigmaRel.confluent : Confluent (@BetaModSigmaRel α) := by
+  intro M N L hMN hML
+  rcases ParStep.confluent (betaModSigmaSteps_subset_parSteps hMN)
+    (betaModSigmaSteps_subset_parSteps hML) with ⟨Q, hNQ, hLQ⟩
+  exact ⟨Q, parSteps_subset_betaModSigmaSteps hNQ,
+    parSteps_subset_betaModSigmaSteps hLQ⟩
+
+theorem betaModSigma_confluent : Confluent (@BetaModSigmaRel α) :=
+  BetaModSigmaRel.confluent
+
 end LambdaEnv

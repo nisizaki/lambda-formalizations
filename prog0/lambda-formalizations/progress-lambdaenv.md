@@ -873,6 +873,24 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 ## Beta modulo sigma
 
+## Beta modulo sigma confluence
+
+### Confluence transfer from ParStep
+
+- `BetaModSigmaRel.confluent` maps both `BetaModSigmaSteps` branches through
+  `betaModSigmaSteps_subset_parSteps`, applies `ParStep.confluent`, then maps
+  the joining `ParSteps` back with `parSteps_subset_betaModSigmaSteps`.
+
+### beta_mod_sigma_rel_confluent
+
+- Lean theorem: `BetaModSigmaRel.confluent : Confluent (@BetaModSigmaRel α)`.
+- Isabelle correspondence: `lemma_3_15_beta_mod_sigma_confluent`.
+
+### beta_mod_sigma_confluent
+
+- Lean theorem: `betaModSigma_confluent`.
+- Isabelle correspondence: `beta_mod_sigma_confluent`.
+
 ### Definition
 
 - Lean definition: `BetaModSigmaRel U V` in `LambdaEnv/BetaModuloSigma.lean`.
