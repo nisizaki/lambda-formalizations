@@ -894,24 +894,40 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 ### BetaStep normalization compatibility
 
-- Pending: `beta_step_to_par_step_normalized` and the compatibility lifting
-  lemmas from the Isabelle section.
+- Lean theorem: `betaStep_to_parStep_normalized`, corresponding to
+  `beta_step_to_par_step_normalized`.
+- Both root beta rules use explicit `SigmaSteps` to normalize bodies,
+  arguments, and environments before reconstructing `ParStep.beta1` or
+  `ParStep.beta2`; the remaining seven `BetaStep` compatibility constructors
+  are lifted structurally, using `ParStep.sigma_comp` for composition.
+- Reusable context API: `betaModSigmaRel_lam`, `*_app_left`, `*_app_right`,
+  `*_ext_left`, `*_ext_right`, `*_comp_left_normalize`,
+  `*_comp_right_normalize`, plus their `BetaModSigmaSteps` liftings.
 
 ### beta_step_to_par_step_normalized
 
-- Pending.
+- Complete as `betaStep_to_parStep_normalized`.
 
 ### beta_mod_sigma_rel_imp_par_step
 
-- Pending.
+- Complete as `betaModSigmaRel_imp_parStep`, corresponding to
+  `lemma_3_14_beta_mod_sigma_subset_par`; it rewrites the two witness normal
+  forms to `sigmaNormalize` and applies normalization compatibility.
 
 ### beta_mod_sigma_steps_subset_par_steps
 
-- Pending.
+- Complete as `betaModSigmaSteps_subset_parSteps`, by induction on
+  `Relation.ReflTransGen` and `betaModSigmaRel_imp_parStep`.
 
 ### par_steps_subset_beta_mod_sigma_steps
 
-- Pending.
+- One-step inclusion: `parStep_subset_betaModSigmaSteps`, corresponding to
+  `lemma_3_14_par_subset_beta_mod_sigma_star`.
+- Multi-step inclusion: `parSteps_subset_betaModSigmaSteps`.
+- All twelve `ParStep` constructors are handled.  The two beta constructors
+  finish with `betaModSigmaStep`; lambda/variable compositions use the
+  normalized composition context lifts.  `beta2` branches on `W' = Trm.id` to
+  choose the matching root `BetaStep`.
 
 ### ParStep confluence
 
