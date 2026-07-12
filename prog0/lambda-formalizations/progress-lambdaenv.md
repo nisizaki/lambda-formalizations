@@ -871,6 +871,63 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
   `ParStep.to_star`.
 - build status: success.
 
+## Beta modulo sigma
+
+### Definition
+
+- Lean definition: `BetaModSigmaRel U V` in `LambdaEnv/BetaModuloSigma.lean`.
+- Isabelle correspondence: `beta_mod_sigma_rel U V`.
+- Meaning: `U` and `V` are sigma-normal, and there are `M`, `N` with
+  `SigmaNormalForm M U`, `BetaStep M N`, and `SigmaNormalForm N V`.
+- Step direction: one beta step between pre-normalization witnesses; this is a
+  one-step relation, not its reflexive-transitive closure.
+- Closures: `BetaModSigmaSteps` and `ParSteps` abbreviate
+  `Relation.ReflTransGen` of the corresponding one-step relations.
+
+### Introduction and elimination lemmas
+
+- `BetaModSigmaRel.intro` corresponds to `beta_mod_sigma_relI`.
+- `BetaModSigmaRel.elim` exposes exactly the two normal-form witnesses and the
+  `BetaStep` premise from the definition.
+- `betaModSigmaStep` corresponds to `beta_mod_sigma_stepI` and gives a
+  one-step-in-closure target at `sigmaNormalize N`.
+
+### BetaStep normalization compatibility
+
+- Pending: `beta_step_to_par_step_normalized` and the compatibility lifting
+  lemmas from the Isabelle section.
+
+### beta_step_to_par_step_normalized
+
+- Pending.
+
+### beta_mod_sigma_rel_imp_par_step
+
+- Pending.
+
+### beta_mod_sigma_steps_subset_par_steps
+
+- Pending.
+
+### par_steps_subset_beta_mod_sigma_steps
+
+- Pending.
+
+### ParStep confluence
+
+- Pending: lift the completed `ParStep.stronglyConfluent` through
+  `Relation.ReflTransGen`.
+
+### Isabelle to Lean correspondence
+
+- `beta_mod_sigma_rel` ↔ `BetaModSigmaRel`.
+- `rtranclp beta_mod_sigma_rel` ↔ `BetaModSigmaSteps`.
+
+### Build status
+
+- `lake env lean LambdaEnv/BetaModuloSigma.lean`: success.
+- `lake build`: success.
+
 ## Current goal
 
 Continue after the completed parallel star theorem and one-step strong
