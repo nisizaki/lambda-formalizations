@@ -515,4 +515,35 @@ theorem sigma_normalize_comp_beta1_target_non_id {U A E : Trm V} {x : V}
   have rEq : sigmaNormalize R = sigmaNormalize M := (sigmaNormalize_eq_of_steps mR).symm
   exact nEq.trans rEq.symm
 
+theorem sigma_normalize_comp_beta2_target {U A W E : Trm V} {x : V}
+    (nU : SigmaNormal U) (nA : SigmaNormal A) (nW : SigmaNormal W) (nE : SigmaNormal E) :
+    sigmaNormalize (.comp (sigmaNormalize (.comp U (.ext A x W))) E) =
+      sigmaNormalize (.comp U (.ext (sigmaNormalize (.comp A E)) x
+        (sigmaNormalize (.comp W E)))) := by
+  let K : Trm V := .comp U (.ext A x W)
+  let M : Trm V := .comp K E
+  let N : Trm V := .comp (sigmaNormalize K) E
+  let R : Trm V := .comp U (.ext (sigmaNormalize (.comp A E)) x (sigmaNormalize (.comp W E)))
+  have mN : SigmaSteps M N := SigmaSteps.comp_left (sigmaNormalize_steps K)
+  have rootAss : SigmaSteps M (.comp U (.comp (.ext A x W) E)) :=
+    SigmaStep.toSteps (SigmaStep.ass U (.ext A x W) E)
+  have rootExt : SigmaSteps (.comp (.ext A x W) E)
+      (.ext (.comp A E) x (.comp W E)) :=
+    SigmaStep.toSteps (SigmaStep.distExt A x W E)
+  have sExt := SigmaSteps.comp_right (L := U) rootExt
+  have sA : SigmaSteps (.comp A E) (sigmaNormalize (.comp A E)) := sigmaNormalize_steps _
+  have sW : SigmaSteps (.comp W E) (sigmaNormalize (.comp W E)) := sigmaNormalize_steps _
+  have sLeft : SigmaSteps (.ext (.comp A E) x (.comp W E))
+      (.ext (sigmaNormalize (.comp A E)) x (.comp W E)) :=
+    SigmaSteps.ext_left x sA
+  have sRight : SigmaSteps (.ext (sigmaNormalize (.comp A E)) x (.comp W E))
+      (.ext (sigmaNormalize (.comp A E)) x (sigmaNormalize (.comp W E))) :=
+    SigmaSteps.ext_right x sW
+  have mR : SigmaSteps M R :=
+    SigmaSteps.trans rootAss (SigmaSteps.trans sExt
+      (SigmaSteps.comp_right (SigmaSteps.trans sLeft sRight)))
+  have nEq : sigmaNormalize N = sigmaNormalize M := (sigmaNormalize_eq_of_steps mN).symm
+  have rEq : sigmaNormalize R = sigmaNormalize M := (sigmaNormalize_eq_of_steps mR).symm
+  exact nEq.trans rEq.symm
+
 end LambdaEnv

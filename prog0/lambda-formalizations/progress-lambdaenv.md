@@ -694,6 +694,17 @@ results.  The top-level strong-induction theorem remains to be added.
 - `ParStep.sigma_comp_beta1`
 - Lemma 3.11 beta1 case
 
+## Beta2 target sigma normalization
+
+- Lean theorem: `sigma_normalize_comp_beta2_target`.
+- Statement: normalizing a beta2 target composed with an outer environment
+  equals the target whose argument and environment compositions are both
+  sigma-normalized.
+- Proof method: explicit sigma multi-step paths for associativity, extension
+  distribution, and contextual normalization, followed by
+  `sigmaNormalize_eq_of_steps`.
+- Status: complete; required by the general beta2 nested composition case.
+
 ## Lemma 3.13 star theorem
 
 ### Isabelle statement
