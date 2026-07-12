@@ -624,6 +624,17 @@ Variable composition requires the recursive `not_ext`/extension split;
 nested composition and the beta1/beta2 branches then reuse those recursive
 results.  The top-level strong-induction theorem remains to be added.
 
+## Lemma 3.11 variable composition
+
+- identity: complete within `ParStep.sigma_comp_var_not_ext`.
+- extension, same variable: remaining (requires the structural recursion on
+  extension terms from the Isabelle `var_source_normal` case).
+- extension, different variable: remaining (same recursion, on the extension
+  right component).
+- non-extension: complete as `ParStep.sigma_comp_var_not_ext`.
+- combined theorem: remaining.
+- remaining errors: none; the completed non-extension theorem builds.
+
 ## Lemma 3.13 star theorem
 
 ### Isabelle statement

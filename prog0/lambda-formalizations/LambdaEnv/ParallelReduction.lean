@@ -261,6 +261,34 @@ theorem ParStep.sigma_comp_app {U₁ U₁' U₂ U₂' E E' : Trm V}
     sigma_normalize_comp_app h₁.target_normal h₂.target_normal hE.target_normal]
   exact ParStep.app ih₁ ih₂
 
+theorem ParStep.sigma_comp_var_not_ext {W W' : Trm V} {x : V}
+    (h : ParStep W W') (hNotExt : not_ext W) :
+    ParStep (sigmaNormalize (.comp (.var x) W))
+      (sigmaNormalize (.comp (.var x) W')) := by
+  have nW := h.source_normal
+  have nVar : SigmaNormal (.var x : Trm V) := sigma_normal_TVar x
+  by_cases hW' : W' = .id
+  · subst W'
+    by_cases hW : W = .id
+    · subst W
+      rw [sigma_normalize_comp_id_right nVar]
+      exact ParStep.var x
+    · rw [sigma_normalize_comp_var_not_ext nW hNotExt hW,
+        sigma_normalize_comp_id_right nVar]
+      exact ParStep.varCompId h hNotExt hW
+  · by_cases hNotExt' : not_ext W'
+    · by_cases hW : W = .id
+      · subst W
+        exact False.elim (hW' h.id_cases)
+      · rw [sigma_normalize_comp_var_not_ext nW hNotExt hW,
+          sigma_normalize_comp_var_not_ext h.target_normal hNotExt' hW']
+        exact ParStep.varComp h hNotExt hNotExt' hW hW'
+    · by_cases hW : W = .id
+      · subst W
+        exact False.elim (hW' h.id_cases)
+      · rw [sigma_normalize_comp_var_not_ext nW hNotExt hW]
+        exact ParStep.varCompOther h hNotExt hNotExt' hW hW'
+
 theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
   let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
   have aux : ∀ n, P n := by
