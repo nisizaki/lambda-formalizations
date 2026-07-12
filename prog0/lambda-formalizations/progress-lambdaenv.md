@@ -627,13 +627,12 @@ results.  The top-level strong-induction theorem remains to be added.
 ## Lemma 3.11 variable composition
 
 - identity: complete within `ParStep.sigma_comp_var_not_ext`.
-- extension, same variable: remaining (requires the structural recursion on
-  extension terms from the Isabelle `var_source_normal` case).
-- extension, different variable: remaining (same recursion, on the extension
-  right component).
+- extension, same variable: complete as `ParStep.sigma_comp_var_ext_same`.
+- extension, different variable: complete as `ParStep.sigma_comp_var_ext_diff`.
 - non-extension: complete as `ParStep.sigma_comp_var_not_ext`.
-- combined theorem: remaining.
-- remaining errors: none; the completed non-extension theorem builds.
+- combined theorem: complete as `ParStep.sigma_comp_var`, by strong induction
+  on `Trm.length W`.
+- remaining errors: none.
 
 ## Lemma 3.13 star theorem
 
