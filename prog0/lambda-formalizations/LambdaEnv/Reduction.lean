@@ -224,6 +224,23 @@ theorem SigmaSteps.app_comp_idRight (M₁ M₂ : Trm V) :
 def Joinable (r : α → α → Prop) (M N : α) : Prop :=
   ∃ L, Relation.ReflTransGen r M L ∧ Relation.ReflTransGen r N L
 
+namespace Joinable
+
+theorem intro {r : α → α → Prop} {M N L : α}
+    (hM : Relation.ReflTransGen r M L) (hN : Relation.ReflTransGen r N L) :
+    Joinable r M N :=
+  ⟨L, hM, hN⟩
+
+theorem refl {r : α → α → Prop} (M : α) : Joinable r M M :=
+  ⟨M, Relation.ReflTransGen.refl, Relation.ReflTransGen.refl⟩
+
+theorem symm {r : α → α → Prop} {M N : α} (h : Joinable r M N) :
+    Joinable r N M := by
+  rcases h with ⟨L, hM, hN⟩
+  exact ⟨L, hN, hM⟩
+
+end Joinable
+
 def LocallyConfluent (r : α → α → Prop) : Prop :=
   ∀ M N₁ N₂, r M N₁ → r M N₂ → Joinable r N₁ N₂
 
@@ -233,6 +250,97 @@ theorem locallyConfluent_of_local_peaks
     LocallyConfluent (@SigmaStep V) := by
   intro M N₁ N₂ h₁ h₂
   exact h M N₁ N₂ h₁ h₂
+
+theorem SigmaJoin.steps {M N L : Trm V} (hM : SigmaSteps M L) (hN : SigmaSteps N L) :
+    Joinable SigmaStep M N :=
+  Joinable.intro hM hN
+
+theorem SigmaJoin.refl (M : Trm V) : Joinable SigmaStep M M :=
+  Joinable.refl M
+
+theorem SigmaJoin.symm {M N : Trm V} (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep N M :=
+  Joinable.symm h
+
+theorem SigmaJoin.step_left {M N : Trm V} (h : SigmaStep M N) :
+    Joinable SigmaStep M N :=
+  SigmaJoin.steps (SigmaStep.toSteps h) (SigmaSteps.refl N)
+
+theorem SigmaJoin.step_right {M N : Trm V} (h : SigmaStep N M) :
+    Joinable SigmaStep M N :=
+  SigmaJoin.symm (SigmaJoin.step_left h)
+
+theorem SigmaStep.no_id {P : Prop} {N : Trm V} (h : SigmaStep .id N) : P := by
+  cases h
+
+theorem SigmaStep.no_var {P : Prop} {x : V} {N : Trm V} (h : SigmaStep (.var x) N) : P := by
+  cases h
+
+theorem SigmaStep.ext_cases {M : Trm V} {x : V} {N P : Trm V}
+    (h : SigmaStep (.ext M x N) P) :
+    (∃ M', SigmaStep M M' ∧ P = .ext M' x N) ∨
+      (∃ N', SigmaStep N N' ∧ P = .ext M x N') := by
+  cases h with
+  | extLeft _ _ hM =>
+      exact Or.inl ⟨_, hM, rfl⟩
+  | extRight _ _ hN =>
+      exact Or.inr ⟨_, hN, rfl⟩
+
+theorem SigmaJoin.app_left {M N L : Trm V} (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep (.app M L) (.app N L) := by
+  rcases h with ⟨P, hM, hN⟩
+  exact SigmaJoin.steps (SigmaSteps.app_left hM) (SigmaSteps.app_left hN)
+
+theorem SigmaJoin.app_right {M N L : Trm V} (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep (.app L M) (.app L N) := by
+  rcases h with ⟨P, hM, hN⟩
+  exact SigmaJoin.steps (SigmaSteps.app_right hM) (SigmaSteps.app_right hN)
+
+theorem SigmaJoin.lam {M N : Trm V} (x : V) (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep (.lam x M) (.lam x N) := by
+  rcases h with ⟨P, hM, hN⟩
+  exact SigmaJoin.steps (SigmaSteps.lam x hM) (SigmaSteps.lam x hN)
+
+theorem SigmaJoin.comp_left {M N L : Trm V} (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep (.comp M L) (.comp N L) := by
+  rcases h with ⟨P, hM, hN⟩
+  exact SigmaJoin.steps (SigmaSteps.comp_left hM) (SigmaSteps.comp_left hN)
+
+theorem SigmaJoin.comp_right {M N L : Trm V} (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep (.comp L M) (.comp L N) := by
+  rcases h with ⟨P, hM, hN⟩
+  exact SigmaJoin.steps (SigmaSteps.comp_right hM) (SigmaSteps.comp_right hN)
+
+theorem SigmaJoin.ext_left {M N L : Trm V} (x : V) (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep (.ext M x L) (.ext N x L) := by
+  rcases h with ⟨P, hM, hN⟩
+  exact SigmaJoin.steps (SigmaSteps.ext_left x hM) (SigmaSteps.ext_left x hN)
+
+theorem SigmaJoin.ext_right {M N L : Trm V} (x : V) (h : Joinable SigmaStep M N) :
+    Joinable SigmaStep (.ext L x M) (.ext L x N) := by
+  rcases h with ⟨P, hM, hN⟩
+  exact SigmaJoin.steps (SigmaSteps.ext_right x hM) (SigmaSteps.ext_right x hN)
+
+theorem SigmaLocalPeak.app_left_right {M M' N N' : Trm V}
+    (left : SigmaStep M M') (right : SigmaStep N N') :
+    Joinable SigmaStep (.app M' N) (.app M N') := by
+  exact SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.appRight M' right))
+    (SigmaStep.toSteps (SigmaStep.appLeft N' left))
+
+theorem SigmaLocalPeak.comp_left_right {M M' N N' : Trm V}
+    (left : SigmaStep M M') (right : SigmaStep N N') :
+    Joinable SigmaStep (.comp M' N) (.comp M N') := by
+  exact SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.compRight M' right))
+    (SigmaStep.toSteps (SigmaStep.compLeft N' left))
+
+theorem SigmaLocalPeak.ext_left_right {M M' N N' : Trm V} (x : V)
+    (left : SigmaStep M M') (right : SigmaStep N N') :
+    Joinable SigmaStep (.ext M' x N) (.ext M x N') := by
+  exact SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.extRight M' x right))
+    (SigmaStep.toSteps (SigmaStep.extLeft x N' left))
 
 inductive BetaStep : Trm V → Trm V → Prop where
   | beta1 (x : V) (M N L : Trm V) :

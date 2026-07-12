@@ -3,8 +3,8 @@
 ## Current goal
 
 Port `IsabelleSources/LambdaEnv.thy` to Lean 4 in dependency order.  The current
-completed slices are `section "Raw terms and length"` and the first core part of
-`section "Reduction relations"`.
+completed slices are `section "Raw terms and length"`, most basic material from
+`section "Reduction relations"`, and the first sigma normal-form definitions.
 
 ## Isabelle source structure
 
@@ -132,6 +132,10 @@ completed slices are `section "Raw terms and length"` and the first core part of
 - `WeakSteps`, corresponding to Isabelle `weak_steps`.
 - `Joinable`, corresponding to Isabelle `joinablep`.
 - `LocallyConfluent`, corresponding to Isabelle `locally_confluentp`.
+- `NormalFormFor`, corresponding to Isabelle `normal_form_for`.
+- `NormalFor`, the unary no-successor predicate used by `SigmaNormal`.
+- `SigmaNormal`, corresponding to Isabelle `sigma_normal`.
+- `SigmaNormalForm`, corresponding to Isabelle `sigma_normal_form`.
 
 ## Completed lemmas
 
@@ -159,16 +163,89 @@ completed slices are `section "Raw terms and length"` and the first core part of
 - `SigmaSteps.ext_comp_idRight`.
 - `SigmaSteps.app_comp_idRight`.
 - `locallyConfluent_of_local_peaks`.
+- `Joinable.intro`, `Joinable.refl`, `Joinable.symm`.
+- `SigmaJoin.steps`, `SigmaJoin.refl`, `SigmaJoin.symm`.
+- `SigmaJoin.step_left`, `SigmaJoin.step_right`.
+- `SigmaStep.no_id`, `SigmaStep.no_var`, `SigmaStep.ext_cases`.
+- `SigmaJoin.app_left`, `SigmaJoin.app_right`, `SigmaJoin.lam`.
+- `SigmaJoin.comp_left`, `SigmaJoin.comp_right`.
+- `SigmaJoin.ext_left`, `SigmaJoin.ext_right`.
+- `SigmaLocalPeak.app_left_right`.
+- `SigmaLocalPeak.comp_left_right`.
+- `SigmaLocalPeak.ext_left_right`.
 - `SigmaStep.toWeakStep`.
 - `BetaStep.toWeakStep`.
 - `WeakStep.sigma_or_beta`.
 - `SigmaSteps.toWeakSteps`.
 - `BetaSteps.toWeakSteps`.
+- `no_step_reflTransGen_eq`.
+- `normalFormFor_exists_of_wellFounded`.
+- `SigmaNormalForm.exists`.
+- `SigmaNormalForm.steps`.
+- `SigmaNormalForm.normal`.
+- `SigmaNormalForm.of_steps_normal`.
+- `SigmaNormal.normal_form_self`.
 
 ## In progress
 
 - Continue `Reduction relations` with local confluence support:
   root-vs-root local peak joinability and the remaining local peak case split.
+- Continue `Sigma reduction` with joinability lemmas for root-vs-compatibility
+  peaks, then connect local confluence to Newman-style confluence before adding
+  unique sigma normalization.
+
+## Reduction relations audit
+
+### Already ported
+
+- Definitions/relations: `sigma_step`, `sigma_root_step`, `terminating`,
+  `sigma_steps`, `beta_step`, `beta_steps`, `weak_step`, `weak_steps`,
+  `joinablep`, `locally_confluentp`.
+- Introduction/inclusion lemmas:
+  `sigma_root_step_imp_sigma_step`, `sigma_step_decreases_length`,
+  `sigma_step_terminating`, `sigma_step_rtranclp`,
+  `sigma_step_imp_weak_step`, `beta_step_imp_weak_step`,
+  `weak_step_imp_sigma_or_beta_step`,
+  `sigma_steps_imp_weak_steps`, `beta_steps_imp_weak_steps`.
+- Multi-step compatibility:
+  `sigma_steps_app_left`, `sigma_steps_app_right`, `sigma_steps_lam`,
+  `sigma_steps_comp_left`, `sigma_steps_comp_right`,
+  `sigma_steps_ext_left`, `sigma_steps_ext_right`.
+- Basic join/compatibility helpers:
+  `sigma_join_stepsI`, `sigma_join_refl`, `sigma_join_sym`,
+  `sigma_join_step_left`, `sigma_join_step_right`,
+  `sigma_join_app_left`, `sigma_join_app_right`, `sigma_join_lam`,
+  `sigma_join_comp_left`, `sigma_join_comp_right`,
+  `sigma_join_ext_left`, `sigma_join_ext_right`,
+  and compatibility-vs-compatibility local peaks for app/comp/ext.
+
+### Not yet ported
+
+- `sigma_root_step_local_peak_joinable` and
+  `sigma_root_step_local_peak_joinablep`.
+- Root-vs-compatibility peak lemmas beginning with `sigma_peak_Ass_left`,
+  `sigma_peak_Ass_mid`, `sigma_peak_Ass_right`, through
+  `sigma_root_vs_step_peak_joinable` and
+  `sigma_step_vs_root_peak_joinable`.
+- Full step/step local peak decomposition:
+  `sigma_step_local_peak_from_AppL`, `..._AppR`, `..._Lam`,
+  `..._CompL`, `..._CompR`, `..._ExtL`, `..._ExtR`,
+  and `sigma_step_local_peak_joinable`.
+- Final local confluence theorem `sigma_step_locally_confluent`.
+
+### Compatibility and local peak proof plan
+
+- Prove root/root peak joinability first by case analysis on
+  `SigmaRootStep`; witnesses are either reflexive, one sigma step, or one of
+  the existing id-right multi-step helpers.
+- Prove compatibility/compatibility peaks for each constructor.  App, comp, and
+  ext two-sided peaks are already present; lam and same-side peaks reduce via
+  `SigmaJoin.*` lifting.
+- Prove root/compatibility peak lemmas in small groups:
+  associativity, id-left/id-right, extension distribution, variable lookup/skip,
+  and application distribution.
+- Package the grouped lemmas into the whole-term local peak theorem only after
+  the smaller cases build cleanly.
 
 ## Remaining Isabelle sections
 
@@ -221,6 +298,11 @@ completed slices are `section "Raw terms and length"` and the first core part of
 - `rtranclp weak_step` / `weak_steps` ↔ `WeakSteps`
 - `joinablep` ↔ `Joinable`
 - `locally_confluentp` ↔ `LocallyConfluent`
+- `normal_form_for` ↔ `NormalFormFor`
+- `sigma_normal` ↔ `SigmaNormal`
+- `sigma_normal_form` ↔ `SigmaNormalForm`
+- `no_step_rtranclp_eq` ↔ `no_step_reflTransGen_eq`
+- `sigma_normal_form_exists` ↔ `SigmaNormalForm.exists`
 
 ## Build status
 
