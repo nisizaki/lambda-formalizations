@@ -485,16 +485,17 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 - Isabelle theorem: `sigma_normalize_comp_right_normalize`,
   `sigma_normalize_comp_left_normalize`
-  Lean theorem: not yet ported
-  Status: remaining
+  Lean theorem: `sigmaNormalize_comp_right_normalize`,
+  `sigmaNormalize_comp_left_normalize`
+  Status: complete
   Needed by: composition congruence in Lemma 3.11 and beta-modulo-sigma proofs.
 
 - Isabelle theorem: `sigma_normalize_comp_var_ext_same`,
   `sigma_normalize_comp_var_ext_diff`, `sigma_normalize_comp_app`,
   `sigma_normalize_comp_comp`, `sigma_normalize_comp_lam`,
   `sigma_normalize_comp_var_not_ext`
-  Lean theorem: not yet ported
-  Status: remaining
+  Lean theorem: corresponding `sigma_normalize_comp_*` names
+  Status: complete
   Needed by: the detailed parallel-composition and strong-confluence cases.
 
 - Isabelle theorem: `sigma_normalize_if_sigma_normal`

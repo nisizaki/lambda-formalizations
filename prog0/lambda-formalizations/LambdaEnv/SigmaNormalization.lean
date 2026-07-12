@@ -344,6 +344,14 @@ theorem sigmaNormalize_eq_of_step {M N : Trm V} (step : SigmaStep M N) :
     sigmaNormalize M = sigmaNormalize N :=
   sigmaNormalize_eq_of_steps (SigmaStep.toSteps step)
 
+theorem sigmaNormalize_comp_right_normalize (A B : Trm V) :
+    sigmaNormalize (.comp A (sigmaNormalize B)) = sigmaNormalize (.comp A B) := by
+  exact (sigmaNormalize_eq_of_steps (SigmaSteps.comp_right (sigmaNormalize_steps B))).symm
+
+theorem sigmaNormalize_comp_left_normalize (A B : Trm V) :
+    sigmaNormalize (.comp (sigmaNormalize A) B) = sigmaNormalize (.comp A B) := by
+  exact (sigmaNormalize_eq_of_steps (SigmaSteps.comp_left (sigmaNormalize_steps A))).symm
+
 theorem sigma_normalize_lam {x : V} {M : Trm V} :
     sigmaNormalize (.lam x M : Trm V) = .lam x (sigmaNormalize M) := by
   exact sigmaNormalize_eq_of_normalForm
@@ -426,5 +434,46 @@ theorem sigma_normalize_comp_ext {x : V} {U1 U2 V' : Trm V}
   have normal : SigmaNormal (.ext (sigmaNormalize (.comp U1 V')) x (sigmaNormalize (.comp U2 V'))) :=
     sigma_normal_ext (x := x) (sigmaNormalize_normal (.comp U1 V')) (sigmaNormalize_normal (.comp U2 V'))
   exact sigmaNormalize_eq_of_normalForm ⟨steps, normal⟩
+
+theorem sigma_normalize_comp_var_ext_same {A B : Trm V} (x : V)
+    (nA : SigmaNormal A) (nB : SigmaNormal B) :
+    sigmaNormalize (.comp (.var x) (.ext A x B)) = A := by
+  calc
+    sigmaNormalize (.comp (.var x) (.ext A x B)) = sigmaNormalize A :=
+      sigmaNormalize_eq_of_step (SigmaStep.varRef x A B)
+    _ = A := sigmaNormalize_eq_of_normal nA
+
+theorem sigma_normalize_comp_var_ext_diff {A B : Trm V} {x y : V}
+    (hxy : x ≠ y) (nA : SigmaNormal A) (nB : SigmaNormal B) :
+    sigmaNormalize (.comp (.var x) (.ext A y B)) = sigmaNormalize (.comp (.var x) B) := by
+  exact sigmaNormalize_eq_of_step (SigmaStep.varSkip A y B x (by
+    intro hyx
+    exact hxy hyx.symm))
+
+theorem sigma_normalize_comp_app {M N V' : Trm V}
+    (nM : SigmaNormal M) (nN : SigmaNormal N) (nV : SigmaNormal V') :
+    sigmaNormalize (.comp (.app M N) V') =
+      .app (sigmaNormalize (.comp M V')) (sigmaNormalize (.comp N V')) := by
+  calc
+    sigmaNormalize (.comp (.app M N) V') =
+        sigmaNormalize (.app (.comp M V') (.comp N V')) :=
+      sigmaNormalize_eq_of_step (SigmaStep.distApp M N V')
+    _ = .app (sigmaNormalize (.comp M V')) (sigmaNormalize (.comp N V')) :=
+      sigma_normalize_app
+
+theorem sigma_normalize_comp_comp {A B V' : Trm V}
+    (nA : SigmaNormal A) (nB : SigmaNormal B) (nV : SigmaNormal V') :
+    sigmaNormalize (.comp (.comp A B) V') = sigmaNormalize (.comp A (.comp B V')) :=
+  sigmaNormalize_eq_of_step (SigmaStep.ass A B V')
+
+theorem sigma_normalize_comp_lam {x : V} {M V' : Trm V}
+    (nM : SigmaNormal M) (nV : SigmaNormal V') (hV : V' ≠ .id) :
+    sigmaNormalize (.comp (.lam x M) V') = .comp (.lam x M) V' :=
+  sigmaNormalize_eq_of_normal (sigma_normal_TComp_lam_iff.mpr ⟨nM, nV, hV⟩)
+
+theorem sigma_normalize_comp_var_not_ext {x : V} {W : Trm V}
+    (nW : SigmaNormal W) (hNotExt : not_ext W) (hW : W ≠ .id) :
+    sigmaNormalize (.comp (.var x) W) = .comp (.var x) W :=
+  sigmaNormalize_eq_of_normal (sigma_normal_TComp_var_iff.mpr ⟨nW, hNotExt, hW⟩)
 
 end LambdaEnv
