@@ -370,6 +370,22 @@ theorem ParStep.sigma_comp_lamcomp_id {U U' W E E' : Trm V} {x : V}
   rw [lhs]
   exact ParStep.sigma_comp_lam hU env
 
+theorem ParStep.sigma_comp_varcomp {W W' E E' : Trm V} {x : V}
+    (hW : ParStep W W') (hE : ParStep E E')
+    (ih : ParStep (sigmaNormalize (.comp W E)) (sigmaNormalize (.comp W' E'))) :
+    ParStep (sigmaNormalize (.comp (.comp (.var x) W) E))
+      (sigmaNormalize (.comp (.comp (.var x) W') E')) := by
+  have lhs : sigmaNormalize (.comp (.comp (.var x) W) E) =
+      sigmaNormalize (.comp (.var x) (sigmaNormalize (.comp W E))) := by
+    rw [sigma_normalize_comp_comp (sigma_normal_TVar x) hW.source_normal hE.source_normal,
+      ← sigmaNormalize_comp_right_normalize]
+  have rhs : sigmaNormalize (.comp (.comp (.var x) W') E') =
+      sigmaNormalize (.comp (.var x) (sigmaNormalize (.comp W' E'))) := by
+    rw [sigma_normalize_comp_comp (sigma_normal_TVar x) hW.target_normal hE.target_normal,
+      ← sigmaNormalize_comp_right_normalize]
+  rw [lhs, rhs]
+  exact ParStep.sigma_comp_var ih
+
 theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
   let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
   have aux : ∀ n, P n := by

@@ -645,7 +645,9 @@ results.  The top-level strong-induction theorem remains to be added.
 - generalized variables: `U'`, `W'`, `E`, and `E'`.
 - lamComp, non-identity: complete as `ParStep.sigma_comp_lamcomp`.
 - lamCompId: complete as `ParStep.sigma_comp_lamcomp_id`.
-- variable composition-derived cases: incomplete.
+- varComp: complete through the generic `ParStep.sigma_comp_varcomp`.
+- varCompOther: complete through the generic `ParStep.sigma_comp_varcomp`.
+- varCompId: complete through the generic `ParStep.sigma_comp_varcomp`.
 - beta1-derived case: incomplete.
 - beta2-derived case: incomplete.
 - helper theorem: `sigma_comp_lamcomp_id` uses the inner composition result
