@@ -142,6 +142,13 @@ theorem SigmaStep.toSteps {M N : Trm V} (h : SigmaStep M N) :
     SigmaSteps M N :=
   Relation.ReflTransGen.single h
 
+theorem SigmaSteps.refl (M : Trm V) : SigmaSteps M M :=
+  Relation.ReflTransGen.refl
+
+theorem SigmaSteps.trans {M N L : Trm V} (hMN : SigmaSteps M N) (hNL : SigmaSteps N L) :
+    SigmaSteps M L :=
+  Relation.ReflTransGen.trans hMN hNL
+
 theorem SigmaSteps.app_left {M N L : Trm V} (h : SigmaSteps M N) :
     SigmaSteps (.app M L) (.app N L) := by
   induction h with
@@ -197,6 +204,35 @@ theorem SigmaSteps.ext_right {M N L : Trm V} (x : V) (h : SigmaSteps M N) :
   | tail hMN hNP ih =>
       exact Relation.ReflTransGen.trans ih
         (Relation.ReflTransGen.single (SigmaStep.extRight L x hNP))
+
+theorem SigmaSteps.comp_idRight_in_compRight (L M : Trm V) :
+    SigmaSteps (.comp L (.comp M .id)) (.comp L M) :=
+  SigmaStep.toSteps (SigmaStep.compRight L (SigmaStep.idRight M))
+
+theorem SigmaSteps.ext_comp_idRight (L M : Trm V) (x : V) :
+    SigmaSteps (.ext (.comp L .id) x (.comp M .id)) (.ext L x M) := by
+  exact SigmaSteps.trans
+    (SigmaStep.toSteps (SigmaStep.extLeft x (.comp M .id) (SigmaStep.idRight L)))
+    (SigmaStep.toSteps (SigmaStep.extRight L x (SigmaStep.idRight M)))
+
+theorem SigmaSteps.app_comp_idRight (M₁ M₂ : Trm V) :
+    SigmaSteps (.app (.comp M₁ .id) (.comp M₂ .id)) (.app M₁ M₂) := by
+  exact SigmaSteps.trans
+    (SigmaStep.toSteps (SigmaStep.appLeft (.comp M₂ .id) (SigmaStep.idRight M₁)))
+    (SigmaStep.toSteps (SigmaStep.appRight M₁ (SigmaStep.idRight M₂)))
+
+def Joinable (r : α → α → Prop) (M N : α) : Prop :=
+  ∃ L, Relation.ReflTransGen r M L ∧ Relation.ReflTransGen r N L
+
+def LocallyConfluent (r : α → α → Prop) : Prop :=
+  ∀ M N₁ N₂, r M N₁ → r M N₂ → Joinable r N₁ N₂
+
+theorem locallyConfluent_of_local_peaks
+    (h : ∀ M N₁ N₂, SigmaStep (V := V) M N₁ → SigmaStep M N₂ →
+      Joinable SigmaStep N₁ N₂) :
+    LocallyConfluent (@SigmaStep V) := by
+  intro M N₁ N₂ h₁ h₂
+  exact h M N₁ N₂ h₁ h₂
 
 inductive BetaStep : Trm V → Trm V → Prop where
   | beta1 (x : V) (M N L : Trm V) :

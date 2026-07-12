@@ -130,6 +130,8 @@ completed slices are `section "Raw terms and length"` and the first core part of
 - `BetaSteps`, corresponding to Isabelle `beta_steps`.
 - `WeakStep`, corresponding to Isabelle `weak_step`.
 - `WeakSteps`, corresponding to Isabelle `weak_steps`.
+- `Joinable`, corresponding to Isabelle `joinablep`.
+- `LocallyConfluent`, corresponding to Isabelle `locally_confluentp`.
 
 ## Completed lemmas
 
@@ -149,9 +151,14 @@ completed slices are `section "Raw terms and length"` and the first core part of
 - `SigmaStep.length_decreases`.
 - `SigmaStep.terminating`.
 - `SigmaStep.toSteps`.
+- `SigmaSteps.refl`, `SigmaSteps.trans`.
 - `SigmaSteps.app_left`, `SigmaSteps.app_right`, `SigmaSteps.lam`.
 - `SigmaSteps.comp_left`, `SigmaSteps.comp_right`.
 - `SigmaSteps.ext_left`, `SigmaSteps.ext_right`.
+- `SigmaSteps.comp_idRight_in_compRight`.
+- `SigmaSteps.ext_comp_idRight`.
+- `SigmaSteps.app_comp_idRight`.
+- `locallyConfluent_of_local_peaks`.
 - `SigmaStep.toWeakStep`.
 - `BetaStep.toWeakStep`.
 - `WeakStep.sigma_or_beta`.
@@ -161,9 +168,7 @@ completed slices are `section "Raw terms and length"` and the first core part of
 ## In progress
 
 - Continue `Reduction relations` with local confluence support:
-  `sigma_comp_idr_in_compR_steps`, `sigma_ext_comp_idr_steps`,
-  `sigma_app_comp_idr_steps`, local peak joinability, and the abstract
-  `locally_confluentp` wrapper.
+  root-vs-root local peak joinability and the remaining local peak case split.
 
 ## Remaining Isabelle sections
 
@@ -214,6 +219,8 @@ completed slices are `section "Raw terms and length"` and the first core part of
 - `rtranclp beta_step` / `beta_steps` ↔ `BetaSteps`
 - `weak_step` ↔ `WeakStep`
 - `rtranclp weak_step` / `weak_steps` ↔ `WeakSteps`
+- `joinablep` ↔ `Joinable`
+- `locally_confluentp` ↔ `LocallyConfluent`
 
 ## Build status
 
