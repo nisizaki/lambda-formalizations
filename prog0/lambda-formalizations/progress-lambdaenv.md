@@ -2,9 +2,9 @@
 
 ## Current goal
 
-Port `IsabelleSources/LambdaEnv.thy` to Lean 4 in dependency order.  The first
-completed slice is `section "Raw terms and length"` plus the length-only helper
-lemmas that immediately support later reduction termination proofs.
+Port `IsabelleSources/LambdaEnv.thy` to Lean 4 in dependency order.  The current
+completed slices are `section "Raw terms and length"` and the first core part of
+`section "Reduction relations"`.
 
 ## Isabelle source structure
 
@@ -122,6 +122,14 @@ lemmas that immediately support later reduction termination proofs.
 
 - `Trm`, corresponding to Isabelle `'v trm`.
 - `Trm.length`, corresponding to Isabelle `term_length`.
+- `SigmaStep`, corresponding to Isabelle `sigma_step`.
+- `SigmaRootStep`, corresponding to Isabelle `sigma_root_step`.
+- `Terminating`, corresponding to Isabelle `terminating`.
+- `SigmaSteps`, corresponding to Isabelle `sigma_steps`.
+- `BetaStep`, corresponding to Isabelle `beta_step`.
+- `BetaSteps`, corresponding to Isabelle `beta_steps`.
+- `WeakStep`, corresponding to Isabelle `weak_step`.
+- `WeakSteps`, corresponding to Isabelle `weak_steps`.
 
 ## Completed lemmas
 
@@ -137,15 +145,29 @@ lemmas that immediately support later reduction termination proofs.
 - `Trm.length_comp_sub_right_app`.
 - `Trm.length_comp_sub_lamcomp_arg`.
 - `Trm.length_comp_sub_varcomp_arg`.
+- `SigmaRootStep.toSigmaStep`.
+- `SigmaStep.length_decreases`.
+- `SigmaStep.terminating`.
+- `SigmaStep.toSteps`.
+- `SigmaSteps.app_left`, `SigmaSteps.app_right`, `SigmaSteps.lam`.
+- `SigmaSteps.comp_left`, `SigmaSteps.comp_right`.
+- `SigmaSteps.ext_left`, `SigmaSteps.ext_right`.
+- `SigmaStep.toWeakStep`.
+- `BetaStep.toWeakStep`.
+- `WeakStep.sigma_or_beta`.
+- `SigmaSteps.toWeakSteps`.
+- `BetaSteps.toWeakSteps`.
 
 ## In progress
 
-- Next section: `Reduction relations`, starting with `sigma_step` and
-  `sigma_root_step`.
+- Continue `Reduction relations` with local confluence support:
+  `sigma_comp_idr_in_compR_steps`, `sigma_ext_comp_idr_steps`,
+  `sigma_app_comp_idr_steps`, local peak joinability, and the abstract
+  `locally_confluentp` wrapper.
 
 ## Remaining Isabelle sections
 
-- `Reduction relations`
+- Remainder of `Reduction relations`
 - `Sigma reduction`
 - `Normal forms`
 - `Star transformation`
@@ -167,6 +189,12 @@ lemmas that immediately support later reduction termination proofs.
   are proof tools rather than canonical simplifications.
 - `Mathlib.Tactic` is imported in `Syntax.lean` for Nat arithmetic automation
   used by the length lemmas.
+- Isabelle `rtranclp` is represented by Mathlib
+  `Relation.ReflTransGen`; the section-specific closure names
+  `SigmaSteps`, `BetaSteps`, and `WeakSteps` are aliases over it.
+- Reduction constructors are declared with explicit term arguments.  This avoids
+  Lean auto-implicit arguments hiding the source terms during induction and
+  keeps the rules close to their Isabelle counterparts.
 
 ## Isabelle to Lean correspondence
 
@@ -178,6 +206,14 @@ lemmas that immediately support later reduction termination proofs.
 - `TExt` ↔ `Trm.ext`
 - `TComp` ↔ `Trm.comp`
 - `term_length` ↔ `Trm.length`
+- `sigma_step` ↔ `SigmaStep`
+- `sigma_root_step` ↔ `SigmaRootStep`
+- `terminating` ↔ `Terminating`
+- `rtranclp sigma_step` / `sigma_steps` ↔ `SigmaSteps`
+- `beta_step` ↔ `BetaStep`
+- `rtranclp beta_step` / `beta_steps` ↔ `BetaSteps`
+- `weak_step` ↔ `WeakStep`
+- `rtranclp weak_step` / `weak_steps` ↔ `WeakSteps`
 
 ## Build status
 
