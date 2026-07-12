@@ -358,6 +358,179 @@ theorem SigmaRootStep.local_peak_joinable {M N₁ N₂ : Trm V}
           SigmaStep.idRight, SigmaStep.distExt, SigmaStep.varRef, SigmaStep.varSkip,
           SigmaStep.distApp])
 
+theorem SigmaLocalPeak.id {N₁ N₂ : Trm V}
+    (left : SigmaStep (.id : Trm V) N₁) (_right : SigmaStep .id N₂) :
+    Joinable SigmaStep N₁ N₂ :=
+  SigmaStep.no_id left
+
+theorem SigmaLocalPeak.var {x : V} {N₁ N₂ : Trm V}
+    (left : SigmaStep (.var x) N₁) (_right : SigmaStep (.var x) N₂) :
+    Joinable SigmaStep N₁ N₂ :=
+  SigmaStep.no_var left
+
+theorem SigmaLocalPeak.lam {x : V} {M N₁ N₂ : Trm V}
+    (bodyPeak : ∀ {P Q : Trm V}, SigmaStep M P → SigmaStep M Q → Joinable SigmaStep P Q)
+    (left : SigmaStep (.lam x M) N₁) (right : SigmaStep (.lam x M) N₂) :
+    Joinable SigmaStep N₁ N₂ := by
+  cases left with
+  | lam _ leftBody =>
+      cases right with
+      | lam _ rightBody =>
+          exact SigmaJoin.lam x (bodyPeak leftBody rightBody)
+
+theorem SigmaLocalPeak.app {M N U W : Trm V}
+    (leftPeak : ∀ {P Q : Trm V}, SigmaStep M P → SigmaStep M Q → Joinable SigmaStep P Q)
+    (rightPeak : ∀ {P Q : Trm V}, SigmaStep N P → SigmaStep N Q → Joinable SigmaStep P Q)
+    (left : SigmaStep (.app M N) U) (right : SigmaStep (.app M N) W) :
+    Joinable SigmaStep U W := by
+  cases left with
+  | appLeft _ leftApp =>
+      cases right with
+      | appLeft _ rightApp =>
+          exact SigmaJoin.app_left (leftPeak leftApp rightApp)
+      | appRight _ rightApp =>
+          exact SigmaLocalPeak.app_left_right leftApp rightApp
+  | appRight _ leftApp =>
+      cases right with
+      | appLeft _ rightApp =>
+          exact SigmaJoin.symm (SigmaLocalPeak.app_left_right rightApp leftApp)
+      | appRight _ rightApp =>
+          exact SigmaJoin.app_right (rightPeak leftApp rightApp)
+
+theorem SigmaLocalPeak.ext {M N U W : Trm V} {x : V}
+    (leftPeak : ∀ {P Q : Trm V}, SigmaStep M P → SigmaStep M Q → Joinable SigmaStep P Q)
+    (rightPeak : ∀ {P Q : Trm V}, SigmaStep N P → SigmaStep N Q → Joinable SigmaStep P Q)
+    (left : SigmaStep (.ext M x N) U) (right : SigmaStep (.ext M x N) W) :
+    Joinable SigmaStep U W := by
+  cases left with
+  | extLeft _ _ leftExt =>
+      cases right with
+      | extLeft _ _ rightExt =>
+          exact SigmaJoin.ext_left x (leftPeak leftExt rightExt)
+      | extRight _ _ rightExt =>
+          exact SigmaLocalPeak.ext_left_right x leftExt rightExt
+  | extRight _ _ leftExt =>
+      cases right with
+      | extLeft _ _ rightExt =>
+          exact SigmaJoin.symm (SigmaLocalPeak.ext_left_right x rightExt leftExt)
+      | extRight _ _ rightExt =>
+          exact SigmaJoin.ext_right x (rightPeak leftExt rightExt)
+
+theorem SigmaLocalPeak.ass_left {L L' M N : Trm V} (h : SigmaStep L L') :
+    Joinable SigmaStep (.comp L (.comp M N)) (.comp (.comp L' M) N) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.compLeft (.comp M N) h))
+    (SigmaStep.toSteps (SigmaStep.ass L' M N))
+
+theorem SigmaLocalPeak.ass_mid {L M M' N : Trm V} (h : SigmaStep M M') :
+    Joinable SigmaStep (.comp L (.comp M N)) (.comp (.comp L M') N) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.compRight L (SigmaStep.compLeft N h)))
+    (SigmaStep.toSteps (SigmaStep.ass L M' N))
+
+theorem SigmaLocalPeak.ass_right {L M N N' : Trm V} (h : SigmaStep N N') :
+    Joinable SigmaStep (.comp L (.comp M N)) (.comp (.comp L M) N') :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.compRight L (SigmaStep.compRight M h)))
+    (SigmaStep.toSteps (SigmaStep.ass L M N'))
+
+theorem SigmaLocalPeak.idLeft_arg {M M' : Trm V} (h : SigmaStep M M') :
+    Joinable SigmaStep M (.comp .id M') :=
+  SigmaJoin.steps (SigmaStep.toSteps h)
+    (SigmaStep.toSteps (SigmaStep.idLeft M'))
+
+theorem SigmaLocalPeak.idRight_arg {M M' : Trm V} (h : SigmaStep M M') :
+    Joinable SigmaStep M (.comp M' .id) :=
+  SigmaJoin.steps (SigmaStep.toSteps h)
+    (SigmaStep.toSteps (SigmaStep.idRight M'))
+
+theorem SigmaLocalPeak.distExt_left {L L' M N : Trm V} {x : V}
+    (h : SigmaStep L L') :
+    Joinable SigmaStep
+      (.ext (.comp L N) x (.comp M N))
+      (.comp (.ext L' x M) N) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.extLeft x (.comp M N) (SigmaStep.compLeft N h)))
+    (SigmaStep.toSteps (SigmaStep.distExt L' x M N))
+
+theorem SigmaLocalPeak.distExt_mid {L M M' N : Trm V} {x : V}
+    (h : SigmaStep M M') :
+    Joinable SigmaStep
+      (.ext (.comp L N) x (.comp M N))
+      (.comp (.ext L x M') N) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.extRight (.comp L N) x (SigmaStep.compLeft N h)))
+    (SigmaStep.toSteps (SigmaStep.distExt L x M' N))
+
+theorem SigmaLocalPeak.distExt_right {L M N N' : Trm V} {x : V}
+    (h : SigmaStep N N') :
+    Joinable SigmaStep
+      (.ext (.comp L N) x (.comp M N))
+      (.comp (.ext L x M) N') := by
+  exact SigmaJoin.steps
+    (SigmaSteps.trans
+      (SigmaStep.toSteps
+        (SigmaStep.extLeft x (.comp M N) (SigmaStep.compRight L h)))
+      (SigmaStep.toSteps
+        (SigmaStep.extRight (.comp L N') x (SigmaStep.compRight M h))))
+    (SigmaStep.toSteps (SigmaStep.distExt L x M N'))
+
+theorem SigmaLocalPeak.varRef_left {x : V} {M M' N : Trm V}
+    (h : SigmaStep M M') :
+    Joinable SigmaStep M (.comp (.var x) (.ext M' x N)) :=
+  SigmaJoin.steps (SigmaStep.toSteps h)
+    (SigmaStep.toSteps (SigmaStep.varRef x M' N))
+
+theorem SigmaLocalPeak.varRef_right {x : V} {M N N' : Trm V}
+    (_h : SigmaStep N N') :
+    Joinable SigmaStep M (.comp (.var x) (.ext M x N')) :=
+  SigmaJoin.steps (SigmaSteps.refl M)
+    (SigmaStep.toSteps (SigmaStep.varRef x M N'))
+
+theorem SigmaLocalPeak.varSkip_left {x y : V} {M M' N : Trm V}
+    (hne : x ≠ y) (_h : SigmaStep M M') :
+    Joinable SigmaStep (.comp (.var y) N) (.comp (.var y) (.ext M' x N)) :=
+  SigmaJoin.steps (SigmaSteps.refl (.comp (.var y) N))
+    (SigmaStep.toSteps (SigmaStep.varSkip M' x N y hne))
+
+theorem SigmaLocalPeak.varSkip_right {x y : V} {M N N' : Trm V}
+    (hne : x ≠ y) (h : SigmaStep N N') :
+    Joinable SigmaStep (.comp (.var y) N) (.comp (.var y) (.ext M x N')) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.compRight (.var y) h))
+    (SigmaStep.toSteps (SigmaStep.varSkip M x N' y hne))
+
+theorem SigmaLocalPeak.distApp_left {M₁ M₁' M₂ N : Trm V}
+    (h : SigmaStep M₁ M₁') :
+    Joinable SigmaStep
+      (.app (.comp M₁ N) (.comp M₂ N))
+      (.comp (.app M₁' M₂) N) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.appLeft (.comp M₂ N) (SigmaStep.compLeft N h)))
+    (SigmaStep.toSteps (SigmaStep.distApp M₁' M₂ N))
+
+theorem SigmaLocalPeak.distApp_mid {M₁ M₂ M₂' N : Trm V}
+    (h : SigmaStep M₂ M₂') :
+    Joinable SigmaStep
+      (.app (.comp M₁ N) (.comp M₂ N))
+      (.comp (.app M₁ M₂') N) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.appRight (.comp M₁ N) (SigmaStep.compLeft N h)))
+    (SigmaStep.toSteps (SigmaStep.distApp M₁ M₂' N))
+
+theorem SigmaLocalPeak.distApp_right {M₁ M₂ N N' : Trm V}
+    (h : SigmaStep N N') :
+    Joinable SigmaStep
+      (.app (.comp M₁ N) (.comp M₂ N))
+      (.comp (.app M₁ M₂) N') := by
+  exact SigmaJoin.steps
+    (SigmaSteps.trans
+      (SigmaStep.toSteps
+        (SigmaStep.appLeft (.comp M₂ N) (SigmaStep.compRight M₁ h)))
+      (SigmaStep.toSteps
+        (SigmaStep.appRight (.comp M₁ N') (SigmaStep.compRight M₂ h))))
+    (SigmaStep.toSteps (SigmaStep.distApp M₁ M₂ N'))
+
 inductive BetaStep : Trm V → Trm V → Prop where
   | beta1 (x : V) (M N L : Trm V) :
       BetaStep (.app (.comp (.lam x M) N) L) (.comp M (.ext L x N))

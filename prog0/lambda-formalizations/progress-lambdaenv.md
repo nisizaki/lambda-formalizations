@@ -174,6 +174,15 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `SigmaLocalPeak.comp_left_right`.
 - `SigmaLocalPeak.ext_left_right`.
 - `SigmaRootStep.local_peak_joinable`.
+- `SigmaLocalPeak.id`, `SigmaLocalPeak.var`.
+- `SigmaLocalPeak.lam`, `SigmaLocalPeak.app`, `SigmaLocalPeak.ext`.
+- Root/compatibility basic peaks:
+  `SigmaLocalPeak.ass_left`, `ass_mid`, `ass_right`,
+  `idLeft_arg`, `idRight_arg`,
+  `distExt_left`, `distExt_mid`, `distExt_right`,
+  `varRef_left`, `varRef_right`,
+  `varSkip_left`, `varSkip_right`,
+  `distApp_left`, `distApp_mid`, `distApp_right`.
 - `SigmaStep.toWeakStep`.
 - `BetaStep.toWeakStep`.
 - `WeakStep.sigma_or_beta`.
@@ -190,7 +199,9 @@ completed slices are `section "Raw terms and length"`, most basic material from
 ## In progress
 
 - Continue `Reduction relations` with local confluence support:
-  root-vs-compatibility peaks and the remaining local peak case split.
+  nested root-vs-compatibility peaks under associativity, extension
+  distribution, and application distribution, then the remaining local peak case
+  split.
 - Continue `Sigma reduction` with joinability lemmas for root-vs-compatibility
   peaks, then connect local confluence to Newman-style confluence before adding
   unique sigma normalization.
@@ -224,10 +235,9 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 - Joinable wrapper corresponding to `sigma_root_step_local_peak_joinablep`
   can now be a direct use of `SigmaRootStep.local_peak_joinable`.
-- Root-vs-compatibility peak lemmas beginning with `sigma_peak_Ass_left`,
-  `sigma_peak_Ass_mid`, `sigma_peak_Ass_right`, through
-  `sigma_root_vs_step_peak_joinable` and
-  `sigma_step_vs_root_peak_joinable`.
+- Nested root-vs-compatibility peak lemmas from
+  `sigma_peak_Ass_inner_Ass` through `sigma_peak_DApp`, plus packaging lemmas
+  `sigma_root_vs_step_peak_joinable` and `sigma_step_vs_root_peak_joinable`.
 - Full step/step local peak decomposition:
   `sigma_step_local_peak_from_AppL`, `..._AppR`, `..._Lam`,
   `..._CompL`, `..._CompR`, `..._ExtL`, `..._ExtR`,
@@ -247,6 +257,37 @@ completed slices are `section "Raw terms and length"`, most basic material from
   and application distribution.
 - Package the grouped lemmas into the whole-term local peak theorem only after
   the smaller cases build cleanly.
+
+## Completed local peak cases
+
+- root/root: `SigmaRootStep.local_peak_joinable`.
+- compatibility/compatibility:
+  `SigmaLocalPeak.app_left_right`, `comp_left_right`, `ext_left_right`.
+- syntax-level non-root peaks:
+  `SigmaLocalPeak.id`, `var`, `lam`, `app`, `ext`.
+- root/compatibility direct subterm peaks:
+  associativity left/middle/right, id-left/id-right argument,
+  extension distribution left/middle/right, var-ref left/right, var-skip
+  left/right, and application distribution left/middle/right.
+
+## Completed confluence results
+
+- None yet.  Local confluence and Newman-style confluence are still pending.
+
+## Newman lemma design
+
+- Not implemented yet.  The intended relation orientation is the existing
+  `Terminating r = WellFounded (fun N M => r M N)`, matching Isabelle
+  `wf {(N, M). r M N}`.  A Newman lemma should take this well-founded converse
+  direction plus `LocallyConfluent r` and return confluence for
+  `Relation.ReflTransGen r`.
+
+## Sigma normalization design
+
+- `SigmaNormalForm.exists` is constructive from `SigmaStep.terminating`.
+- `sigmaNormalize` is not defined yet.  It should be introduced only after
+  sigma confluence gives uniqueness, and will likely be `noncomputable` via
+  `Classical.choose`, matching Isabelle's `THE` operator.
 
 ## Remaining Isabelle sections
 
@@ -306,6 +347,18 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `sigma_normal_form_exists` ↔ `SigmaNormalForm.exists`
 - `sigma_root_step_local_peak_joinable` ↔
   `SigmaRootStep.local_peak_joinable`
+- `sigma_peak_Ass_left/mid/right` ↔
+  `SigmaLocalPeak.ass_left/mid/right`
+- `sigma_peak_IdL_arg` ↔ `SigmaLocalPeak.idLeft_arg`
+- `sigma_peak_IdR_arg` ↔ `SigmaLocalPeak.idRight_arg`
+- `sigma_peak_DExtn_left/mid/right` ↔
+  `SigmaLocalPeak.distExt_left/mid/right`
+- `sigma_peak_VarRef_left/right` ↔
+  `SigmaLocalPeak.varRef_left/right`
+- `sigma_peak_VarSkip_left/right` ↔
+  `SigmaLocalPeak.varSkip_left/right`
+- `sigma_peak_DApp_left/mid/right` ↔
+  `SigmaLocalPeak.distApp_left/mid/right`
 
 ## Build status
 
