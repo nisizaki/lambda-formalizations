@@ -464,3 +464,93 @@ completed slices are `section "Raw terms and length"`, most basic material from
   success
 - Last checked:
   2026-07-13 Asia/Tokyo
+
+## Sigma normalization declaration order
+
+- `sigmaNormalize` and its normal-form, uniqueness, and closure lemmas now
+  precede all lemmas that invoke `sigmaNormalize`.
+- No theorem statement was changed; the move only resolves Lean's
+  forward-reference errors.
+
+## Remaining sigma lemmas
+
+- Isabelle theorem: `sigma_normal_imp_sigma_normal_syntax_corrected`,
+  `sigma_normal_syntax_corrected_imp_sigma_normal`,
+  `lemma_3_7_sigma_normal_syntactic_characterization`
+  Lean theorem: `sigma_normal_syntax_corrected` only
+  Status: remaining
+  Needed by: the original Isabelle proof of `sigma_normal_TComp_cases_for_par_refl`;
+  Lean already has a direct case-analysis helper for that immediate use.
+
+- Isabelle theorem: `sigma_normalize_comp_right_normalize`,
+  `sigma_normalize_comp_left_normalize`
+  Lean theorem: not yet ported
+  Status: remaining
+  Needed by: composition congruence in Lemma 3.11 and beta-modulo-sigma proofs.
+
+- Isabelle theorem: `sigma_normalize_comp_var_ext_same`,
+  `sigma_normalize_comp_var_ext_diff`, `sigma_normalize_comp_app`,
+  `sigma_normalize_comp_comp`, `sigma_normalize_comp_lam`,
+  `sigma_normalize_comp_var_not_ext`
+  Lean theorem: not yet ported
+  Status: remaining
+  Needed by: the detailed parallel-composition and strong-confluence cases.
+
+- Isabelle theorem: `sigma_normalize_if_sigma_normal`
+  Lean theorem: `sigmaNormalize_eq_of_normal`
+  Status: complete
+  Needed by: star normalization and every downstream normalization rewrite.
+
+- Isabelle theorem: `sigma_normalize_lam`, `sigma_normalize_app`,
+  `sigma_normalize_ext`, `sigma_normalize_comp_id_left`,
+  `sigma_normalize_comp_id_right`, `sigma_normalize_comp_lam_id`,
+  `sigma_normalize_comp_lam_not_id`, `sigma_normalize_comp_ext`
+  Lean theorem: corresponding `sigma_normalize_*` names
+  Status: complete
+  Needed by: parallel-reduction normalization calculations.
+
+## Term star
+
+- `Trm.star` is implemented in `LambdaEnv/ParallelReduction.lean` with all
+  eleven Isabelle `term_star` clauses in source order.
+- Complete: constructor/equation lemmas through `term_star_var_comp`,
+  `term_star_sigma_normal`, and `sigma_normalize_term_star_eq`.
+- The source has no separate `term_star` idempotence theorem; no conjectural
+  replacement was added.
+
+## Parallel reduction rules
+
+| Isabelle | Lean | Side conditions |
+|---|---|---|
+| `ParVar` | pending `ParStep.var` | none |
+| `ParLam` | pending `ParStep.lam` | recursive premise |
+| `ParApp` | pending `ParStep.app` | two recursive premises |
+| `ParId` | pending `ParStep.id` | none |
+| `ParExtn` | pending `ParStep.ext` | two recursive premises |
+| `ParLamComp` | pending | `V ≠ TId`, `V' ≠ TId` |
+| `ParLamCompId` | pending | `par_step V TId`, `V ≠ TId` |
+| `ParVarComp` | pending | `not_ext W`, `not_ext W'`, `W ≠ TId`, `W' ≠ TId` |
+| `ParVarCompOther` | pending | `not_ext W`, `¬ not_ext W'`, `W ≠ TId`, and Isabelle lists `W' ≠ TId` twice |
+| `ParVarCompId` | pending | `par_step W TId`, `not_ext W`, `W ≠ TId` |
+| `ParBeta1` | pending | recursive premises for body and argument |
+| `ParBeta2` | pending | `W ≠ TId` plus recursive premises for body, argument, environment |
+
+## Current goal
+
+Complete the next sigma composition-normalization lemmas required before the
+parallel reduction congruence and strong-confluence proofs.
+
+## Remaining work
+
+- Port the remaining sigma lemmas listed above, beginning with normalization
+  under composition.
+- Define `ParStep` exactly as surveyed, then establish its source/target
+  sigma-normality lemmas.
+- Continue with Lemmas 3.11--3.13 and beta modulo sigma only after those
+  prerequisites build.
+
+## Build status
+
+- Command: `lake env lean LambdaEnv/ParallelReduction.lean`
+- Result: success
+- Last checked: 2026-07-13 Asia/Tokyo
