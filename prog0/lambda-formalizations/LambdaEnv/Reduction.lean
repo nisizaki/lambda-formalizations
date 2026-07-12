@@ -244,6 +244,11 @@ end Joinable
 def LocallyConfluent (r : α → α → Prop) : Prop :=
   ∀ M N₁ N₂, r M N₁ → r M N₂ → Joinable r N₁ N₂
 
+/-- One-step diamond property, corresponding to Isabelle's use of
+`strongly_confluentp`. -/
+def StronglyConfluent (r : α → α → Prop) : Prop :=
+  ∀ ⦃M N₁ N₂⦄, r M N₁ → r M N₂ → ∃ L, r N₁ L ∧ r N₂ L
+
 theorem locallyConfluent_of_local_peaks
     (h : ∀ M N₁ N₂, SigmaStep (V := V) M N₁ → SigmaStep M N₂ →
       Joinable SigmaStep N₁ N₂) :

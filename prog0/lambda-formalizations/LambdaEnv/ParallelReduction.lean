@@ -819,4 +819,10 @@ theorem ParStep.to_star {M N : Trm V} (step : ParStep M N) : ParStep N M.star :=
               (ParStep.ext (ih _ lenA rfl hA) (ih _ lenW rfl hW))
   exact aux _ rfl step
 
+/-- Parallel reduction has the one-step diamond property, with the star
+transform of the common source as common reduct. -/
+theorem ParStep.stronglyConfluent : StronglyConfluent (@ParStep V) := by
+  intro M N₁ N₂ h₁ h₂
+  exact ⟨M.star, h₁.to_star, h₂.to_star⟩
+
 end LambdaEnv

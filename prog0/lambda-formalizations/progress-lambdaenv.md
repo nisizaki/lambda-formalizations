@@ -862,21 +862,25 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 ## Parallel strong confluence
 
-Not started.  Once `ParStep.to_star` is available, the common successor for
-two one-step branches is `Trm.star` of their common source, exactly as in the
-Isabelle proof.
+- definition: `StronglyConfluent r` is the general one-step diamond property
+  `r M N₁ → r M N₂ → ∃ L, r N₁ L ∧ r N₂ L`.
+- Lean theorem: `ParStep.stronglyConfluent :
+  StronglyConfluent (@ParStep V)`.
+- common reduct: `M.star`, where `M` is the common source.
+- dependencies: the two branches are closed independently by
+  `ParStep.to_star`.
+- build status: success.
 
 ## Current goal
 
-Port the sigma-normalization congruence lemmas required for the parallel
-composition lemma, then prove the star theorem (Lemma 3.13).
+Continue after the completed parallel star theorem and one-step strong
+confluence result.
 
 ## Remaining work
 
-- Prove Lemma 3.13 to-star using the completed Lemma 3.11 composition
-  compatibility theorem.
-- Strong confluence and beta modulo sigma remain out of scope until those
-  prerequisites build.
+- Derive ordinary confluence of `ParStep` when the reusable strong-confluence
+  to reflexive-transitive-confluence infrastructure is added.
+- Beta modulo sigma and the later Hardin interpretation remain.
 
 ## Build status
 
