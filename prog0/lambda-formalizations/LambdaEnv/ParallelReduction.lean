@@ -337,6 +337,23 @@ theorem ParStep.sigma_comp_var {W W' : Trm V} {x : V}
         | comp M N => exact ParStep.sigma_comp_var_not_ext hWW' (by simp [not_ext])
   exact aux (Trm.length W) W W' rfl h
 
+theorem ParStep.sigma_comp_lamcomp {U U' W W' E E' : Trm V} {x : V}
+    (hU : ParStep U U') (hW : ParStep W W')
+    (hWne : W ≠ .id) (hW'ne : W' ≠ .id) (hE : ParStep E E')
+    (ih : ParStep (sigmaNormalize (.comp W E)) (sigmaNormalize (.comp W' E'))) :
+    ParStep (sigmaNormalize (.comp (.comp (.lam x U) W) E))
+      (sigmaNormalize (.comp (.comp (.lam x U') W') E')) := by
+  have lhs : sigmaNormalize (.comp (.comp (.lam x U) W) E) =
+      sigmaNormalize (.comp (.lam x U) (sigmaNormalize (.comp W E))) := by
+    rw [sigma_normalize_comp_comp (sigma_normal_lam hU.source_normal) hW.source_normal hE.source_normal,
+      ← sigmaNormalize_comp_right_normalize]
+  have rhs : sigmaNormalize (.comp (.comp (.lam x U') W') E') =
+      sigmaNormalize (.comp (.lam x U') (sigmaNormalize (.comp W' E'))) := by
+    rw [sigma_normalize_comp_comp (sigma_normal_lam hU.target_normal) hW.target_normal hE.target_normal,
+      ← sigmaNormalize_comp_right_normalize]
+  rw [lhs, rhs]
+  exact ParStep.sigma_comp_lam hU ih
+
 theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
   let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
   have aux : ∀ n, P n := by

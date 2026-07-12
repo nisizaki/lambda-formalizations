@@ -634,6 +634,24 @@ results.  The top-level strong-induction theorem remains to be added.
   on `Trm.length W`.
 - remaining errors: none.
 
+## Lemma 3.11 nested composition
+
+- Isabelle source shape: `TComp (TComp (TLam x U) W) V`, reassociated to
+  `TComp (TLam x U) (TComp W V)` by sigma associativity.
+- Lean helper theorem: `ParStep.sigma_comp_lamcomp`.
+- induction measure: the eventual Lemma 3.11 strong induction uses
+  `Trm.length (.comp U V)`; this helper accepts the strictly smaller inner
+  environment result as its `ih` premise.
+- generalized variables: `U'`, `W'`, `E`, and `E'`.
+- completed constructor cases: the `lamComp` (non-identity target environment)
+  branch.
+- remaining constructor cases: `lamCompId`, and all variable/beta-originated
+  nested composition branches.
+- added inversion lemmas: none.
+- added length lemmas: none; existing `Trm.length_comp_sub_lamcomp_arg` is the
+  intended decrease proof when assembling the outer strong induction.
+- build status: success.
+
 ## Lemma 3.13 star theorem
 
 ### Isabelle statement
