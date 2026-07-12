@@ -1,0 +1,8 @@
+/.lake
+
+# Editor-local files
+/.vscode/
+
+# Lean generated artifacts outside .lake
+*.olean
+*.ilean
