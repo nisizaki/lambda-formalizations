@@ -594,8 +594,16 @@ other five constructors.  Its constructor evaluation lemmas are reused here.
 
 ### Lean statement
 
-The intended final theorem is `ParStep.sigma_comp` with the same two premises
-and conclusion.  It is not yet assembled from the completed cases.
+`ParStep.sigma_comp`:
+
+```lean
+ParStep U U' → ParStep V V' →
+  ParStep (sigmaNormalize (.comp U V))
+    (sigmaNormalize (.comp U' V'))
+```
+
+This is the direct Lean correspondence of Isabelle
+`lemma_3_11_par_step_sigma_comp`.
 
 ### Supporting lemmas
 
@@ -609,20 +617,50 @@ and conclusion.  It is not yet assembled from the completed cases.
 
 ### Induction measure
 
-The Isabelle proof uses strong induction on `Trm.length (.comp U V)`.  Its
-recursive calls are on distributed extension/application subcompositions and
-the environment subcomposition of lambda/variable composition.
+`Trm.length (.comp U V)`.
 
-### Completed cases
+The Lean proof uses `Nat.strong_induction_on` and generalizes `U`, `U'`, `V`,
+and `V'` in its local induction predicate.  Recursive calls are on distributed
+extension/application subcompositions and the environment subcomposition of
+lambda/variable composition.
 
-Identity, extension, lambda composition, and ordinary application (the
-`ParApp` branch once its two induction hypotheses are supplied).
+### Constructor cases
 
-### Remaining cases
+- var: `ParStep.sigma_comp_var`.
+- lam: `ParStep.sigma_comp_lam`.
+- app: `ParStep.sigma_comp_app` with the two strict application subterm calls.
+- id: `ParStep.sigma_comp_id`.
+- ext: `ParStep.sigma_comp_ext` with the two strict extension subterm calls.
+- lamComp / lamCompId: `ParStep.sigma_comp_lamcomp` /
+  `ParStep.sigma_comp_lamcomp_id`, using the inner environment result.
+- varComp / varCompOther / varCompId: `ParStep.sigma_comp_varcomp`, with
+  `sigmaNormalize_comp_left_normalize` for `varCompOther` and an identity-right
+  sigma path for `varCompId`.
+- beta1: `ParStep.sigma_comp_beta1`, using `sigma_comp_lam` and the argument
+  subcomposition result.
+- beta2: `ParStep.sigma_comp_beta2`, using the function and argument results;
+  the `W' = id` branch uses `lamCompId` and a contextual identity-right sigma
+  path, and the other branch uses `lamComp`.
 
-Variable composition requires the recursive `not_ext`/extension split;
-nested composition and the beta1/beta2 branches then reuse those recursive
-results.  The top-level strong-induction theorem remains to be added.
+### Supporting case lemmas
+
+- `ParStep.sigma_comp_id`, `sigma_comp_ext`, `sigma_comp_lam`,
+  `sigma_comp_app`, `sigma_comp_var`, `sigma_comp_lamcomp`,
+  `sigma_comp_lamcomp_id`, `sigma_comp_varcomp`, `sigma_comp_beta1`, and
+  `sigma_comp_beta2`.
+
+### Length lemmas used
+
+- `Trm.length_comp_sub_left_ext`
+- `Trm.length_comp_sub_right_ext`
+- `Trm.length_comp_sub_left_app`
+- `Trm.length_comp_sub_right_app`
+- `Trm.length_comp_sub_lamcomp_arg`
+- `Trm.length_comp_sub_varcomp_arg`
+
+### Build status
+
+Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 
 ## Lemma 3.11 variable composition
 
@@ -802,10 +840,8 @@ composition lemma, then prove the star theorem (Lemma 3.13).
 
 ## Remaining work
 
-- Port the remaining sigma lemmas listed above, beginning with normalization
-  under composition.
-- Prove the remaining normalization-under-composition lemmas.
-- Prove Lemma 3.11 composition compatibility, then Lemma 3.13 to-star.
+- Prove Lemma 3.13 to-star using the completed Lemma 3.11 composition
+  compatibility theorem.
 - Strong confluence and beta modulo sigma remain out of scope until those
   prerequisites build.
 

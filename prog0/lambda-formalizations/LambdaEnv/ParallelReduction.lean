@@ -492,6 +492,101 @@ theorem ParStep.sigma_comp_beta2 {U U' W W' A A' E E' : Trm V} {x : V}
         exact ParStep.beta2 hF hU ihArg hEnv
       · cases hEq
 
+/-- Isabelle Lemma 3.11: parallel reduction is compatible with composition
+followed by sigma normalization. -/
+theorem ParStep.sigma_comp {M M' N N' : Trm V}
+    (hM : ParStep M M') (hN : ParStep N N') :
+    ParStep (sigmaNormalize (.comp M N)) (sigmaNormalize (.comp M' N')) := by
+  let P : Nat → Prop := fun n => ∀ {A A' B B' : Trm V},
+    Trm.length (.comp A B) = n → ParStep A A' → ParStep B B' →
+      ParStep (sigmaNormalize (.comp A B)) (sigmaNormalize (.comp A' B'))
+  have aux : ∀ n, P n := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | h n ih =>
+        intro U U' V V' hlen hU hV
+        cases hU with
+        | var x =>
+            exact ParStep.sigma_comp_var hV
+        | lam hM =>
+            exact ParStep.sigma_comp_lam hM hV
+        | app hA hB =>
+            exact ParStep.sigma_comp_app hA hB hV
+              (ih _ (by
+                rw [← hlen]
+                exact Trm.length_comp_sub_left_app _ _ _) rfl hA hV)
+              (ih _ (by
+                rw [← hlen]
+                exact Trm.length_comp_sub_right_app _ _ _) rfl hB hV)
+        | id =>
+            exact ParStep.sigma_comp_id hV
+        | ext hA hB =>
+            exact ParStep.sigma_comp_ext hA hB hV
+              (ih _ (by
+                rw [← hlen]
+                exact Trm.length_comp_sub_left_ext _ _ _ _) rfl hA hV)
+              (ih _ (by
+                rw [← hlen]
+                exact Trm.length_comp_sub_right_ext _ _ _ _) rfl hB hV)
+        | lamComp hM hW hWne hW'ne =>
+            exact ParStep.sigma_comp_lamcomp hM hW hWne hW'ne hV
+              (ih _ (by
+                rw [← hlen]
+                exact Trm.length_comp_sub_lamcomp_arg _ _ _ _) rfl hW hV)
+        | lamCompId hM hW hWne =>
+            exact ParStep.sigma_comp_lamcomp_id hM hW hWne hV
+              (ih _ (by
+                rw [← hlen]
+                exact Trm.length_comp_sub_lamcomp_arg _ _ _ _) rfl hW hV)
+        | @varComp W W' x hW hNotExt hNotExt' hWne hW'ne =>
+            exact ParStep.sigma_comp_varcomp (x := x) hW hV (ih _ (by
+              rw [← hlen]
+              exact Trm.length_comp_sub_varcomp_arg _ _ _) rfl hW hV)
+        | @varCompOther W W' x hW hNotExt hNotExt' hWne hW'ne =>
+            rw [sigmaNormalize_comp_left_normalize]
+            exact ParStep.sigma_comp_varcomp (x := x) hW hV (ih _ (by
+              rw [← hlen]
+              exact Trm.length_comp_sub_varcomp_arg _ _ _) rfl hW hV)
+        | @varCompId W x hW hNotExt hWne =>
+            have hTarget : sigmaNormalize (.comp (.comp (.var x) .id) V') =
+                sigmaNormalize (.comp (.var x) V') :=
+              sigmaNormalize_eq_of_steps
+                (SigmaSteps.comp_left (SigmaStep.toSteps (SigmaStep.idRight _)))
+            rw [← hTarget]
+            exact ParStep.sigma_comp_varcomp (x := x) hW hV (ih _ (by
+              rw [← hlen]
+              exact Trm.length_comp_sub_varcomp_arg _ _ _) rfl hW hV)
+        | beta1 hM hA =>
+            exact ParStep.sigma_comp_beta1 hM hA hV
+              (ParStep.sigma_comp_lam hM hV) (ih _ (by
+                rw [← hlen]
+                exact Trm.length_comp_sub_right_app _ _ _) rfl hA hV)
+        | @beta2 W U U' A A' W' x hWne hM hA hW =>
+            have lenFun : Trm.length (.comp (.comp (.lam x U) W) V) < n := by
+              rw [← hlen]
+              exact Trm.length_comp_sub_left_app _ _ _
+            have lenA : Trm.length (.comp A V) < n := by
+              rw [← hlen]
+              exact Trm.length_comp_sub_right_app _ _ _
+            have ihArg := ih _ lenA rfl hA hV
+            by_cases hW'id : W' = .id
+            · subst W'
+              have hFun : ParStep (.comp (.lam x U) W) (.lam x U') :=
+                ParStep.lamCompId hM hW hWne
+              have ih0 := ih _ lenFun rfl hFun hV
+              have hTarget : sigmaNormalize (.comp (.comp (.lam x U') .id) V') =
+                  sigmaNormalize (.comp (.lam x U') V') :=
+                sigmaNormalize_eq_of_steps
+                  (SigmaSteps.comp_left (SigmaStep.toSteps (SigmaStep.idRight _)))
+              exact ParStep.sigma_comp_beta2 hWne hM hW hA hV (by
+                rw [hTarget]
+                exact ih0) ihArg
+            · have hFun : ParStep (.comp (.lam x U) W) (.comp (.lam x U') W') :=
+                ParStep.lamComp hM hW hWne hW'id
+              exact ParStep.sigma_comp_beta2 hWne hM hW hA hV
+                (ih _ lenFun rfl hFun hV) ihArg
+  exact aux _ rfl hM hN
+
 theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
   let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
   have aux : ∀ n, P n := by
