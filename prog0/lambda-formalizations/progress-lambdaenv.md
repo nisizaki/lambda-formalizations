@@ -651,7 +651,7 @@ results.  The top-level strong-induction theorem remains to be added.
 - beta1-derived case: outer-identity subcase complete as
   `ParStep.sigma_comp_beta1_id`; general case complete as
   `ParStep.sigma_comp_beta1`.
-- beta2-derived case: incomplete.
+- beta2-derived case: complete as `ParStep.sigma_comp_beta2`.
 - helper theorem: `sigma_comp_lamcomp_id` uses the inner composition result
   and rewrites its identity target with `sigma_normalize_comp_id_left`.
 - recursion used: the inner environment result is supplied as `ih`.
@@ -660,6 +660,28 @@ results.  The top-level strong-induction theorem remains to be added.
 - added inversion lemmas: none.
 - added length lemmas: none; existing `Trm.length_comp_sub_lamcomp_arg` is the
   intended decrease proof when assembling the outer strong induction.
+- build status: success.
+
+### Beta2 case
+
+- Lean theorem: `ParStep.sigma_comp_beta2`.
+- lambda-function induction result:
+  `ParStep (sigmaNormalize (.comp (.comp (.lam x U) W) E))
+  (sigmaNormalize (.comp (.comp (.lam x U') W') E'))`.
+- argument induction result:
+  `ParStep (sigmaNormalize (.comp A E)) (sigmaNormalize (.comp A' E'))`.
+- inner-environment induction result: contained in the lambda-function result;
+  after environment normalization it yields the `ParStep` evidence between
+  `sigmaNormalize (.comp W E)` and `sigmaNormalize (.comp W' E')`.
+- source normalized environment: `F = sigmaNormalize (.comp W E)`.
+- target normalized environment: `F' = sigmaNormalize (.comp W' E')`.
+- identity split: first on `F = Trm.id`, then on `F' = Trm.id`.
+- identity branch final rule: `ParStep.beta1` when both environments are
+  identity; the mixed source-identity/target-nonidentity case is impossible
+  by `ParStep.lam_cases`.
+- non-identity branch final rule: `ParStep.beta2`; when only `F'` is identity,
+  the requisite `ParStep F Trm.id` is extracted by `ParStep.comp_lam_cases`.
+- target normalization lemma: `sigma_normalize_comp_beta2_target`.
 - build status: success.
 
 ## Beta1 target sigma normalization

@@ -430,6 +430,68 @@ theorem ParStep.sigma_comp_beta1 {U U' A A' E E' : Trm V} {x : V}
       rw [lhs, rhs]
       exact ParStep.beta2 hEid hU ihArg hE
 
+theorem ParStep.sigma_comp_beta2 {U U' W W' A A' E E' : Trm V} {x : V}
+    (hWne : W ≠ .id) (hU : ParStep U U') (hW : ParStep W W')
+    (hA : ParStep A A') (hE : ParStep E E')
+    (ihFun : ParStep (sigmaNormalize (.comp (.comp (.lam x U) W) E))
+      (sigmaNormalize (.comp (.comp (.lam x U') W') E')))
+    (ihArg : ParStep (sigmaNormalize (.comp A E))
+      (sigmaNormalize (.comp A' E'))) :
+    ParStep (sigmaNormalize (.comp (.app (.comp (.lam x U) W) A) E))
+      (sigmaNormalize (.comp (sigmaNormalize (.comp U' (.ext A' x W'))) E')) := by
+  have nFun : SigmaNormal (.comp (.lam x U) W) :=
+    sigma_normal_TComp_lam_iff.mpr ⟨hU.source_normal, hW.source_normal, hWne⟩
+  have lhsApp : sigmaNormalize (.comp (.app (.comp (.lam x U) W) A) E) =
+      .app (sigmaNormalize (.comp (.comp (.lam x U) W) E))
+        (sigmaNormalize (.comp A E)) := by
+    rw [sigma_normalize_comp_app nFun hA.source_normal hE.source_normal]
+  have rhsBeta2 : sigmaNormalize (.comp (sigmaNormalize (.comp U' (.ext A' x W'))) E') =
+      sigmaNormalize (.comp U' (.ext (sigmaNormalize (.comp A' E')) x
+        (sigmaNormalize (.comp W' E')))) :=
+    sigma_normalize_comp_beta2_target hU.target_normal hA.target_normal
+      hW.target_normal hE.target_normal
+  by_cases hF : sigmaNormalize (.comp W E) = .id
+  · have srcFun : sigmaNormalize (.comp (.comp (.lam x U) W) E) = .lam x U :=
+      sigma_normalize_lamcomp_env_id hU.source_normal hW.source_normal hE.source_normal hF
+    by_cases hF' : sigmaNormalize (.comp W' E') = .id
+    · have tgtFun : sigmaNormalize (.comp (.comp (.lam x U') W') E') = .lam x U' :=
+        sigma_normalize_lamcomp_env_id hU.target_normal hW.target_normal hE.target_normal hF'
+      rw [lhsApp, srcFun, rhsBeta2, hF']
+      exact ParStep.beta1 hU ihArg
+    · have tgtFun : sigmaNormalize (.comp (.comp (.lam x U') W') E') =
+          .comp (.lam x U') (sigmaNormalize (.comp W' E')) :=
+        sigma_normalize_lamcomp_env_non_id hU.target_normal hW.target_normal hE.target_normal hF'
+      have impossible : ParStep (.lam x U) (.comp (.lam x U') (sigmaNormalize (.comp W' E'))) := by
+        rw [← srcFun, ← tgtFun]
+        exact ihFun
+      rcases impossible.lam_cases with ⟨Z, hEq, _⟩
+      cases hEq
+  · have srcFun : sigmaNormalize (.comp (.comp (.lam x U) W) E) =
+        .comp (.lam x U) (sigmaNormalize (.comp W E)) :=
+      sigma_normalize_lamcomp_env_non_id hU.source_normal hW.source_normal hE.source_normal hF
+    by_cases hF' : sigmaNormalize (.comp W' E') = .id
+    · have tgtFun : sigmaNormalize (.comp (.comp (.lam x U') W') E') = .lam x U' :=
+        sigma_normalize_lamcomp_env_id hU.target_normal hW.target_normal hE.target_normal hF'
+      have funStep : ParStep (.comp (.lam x U) (sigmaNormalize (.comp W E))) (.lam x U') := by
+        rw [← srcFun, ← tgtFun]
+        exact ihFun
+      rcases funStep.comp_lam_cases with ⟨_, _, hEq, _, hEnv, _, _⟩ | ⟨_, hEq, _, hEnv, _⟩
+      · cases hEq
+      · rw [lhsApp, srcFun, rhsBeta2, hF']
+        exact ParStep.beta2 hF hU ihArg hEnv
+    · have tgtFun : sigmaNormalize (.comp (.comp (.lam x U') W') E') =
+          .comp (.lam x U') (sigmaNormalize (.comp W' E')) :=
+        sigma_normalize_lamcomp_env_non_id hU.target_normal hW.target_normal hE.target_normal hF'
+      have funStep : ParStep (.comp (.lam x U) (sigmaNormalize (.comp W E)))
+          (.comp (.lam x U') (sigmaNormalize (.comp W' E'))) := by
+        rw [← srcFun, ← tgtFun]
+        exact ihFun
+      rcases funStep.comp_lam_cases with ⟨_, _, hEq, _, hEnv, _, _⟩ | ⟨_, hEq, _, _, _⟩
+      · cases hEq
+        rw [lhsApp, srcFun, rhsBeta2]
+        exact ParStep.beta2 hF hU ihArg hEnv
+      · cases hEq
+
 theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
   let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
   have aux : ∀ n, P n := by
