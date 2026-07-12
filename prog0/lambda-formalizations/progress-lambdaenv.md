@@ -643,10 +643,16 @@ results.  The top-level strong-induction theorem remains to be added.
   `Trm.length (.comp U V)`; this helper accepts the strictly smaller inner
   environment result as its `ih` premise.
 - generalized variables: `U'`, `W'`, `E`, and `E'`.
-- completed constructor cases: the `lamComp` (non-identity target environment)
-  branch.
-- remaining constructor cases: `lamCompId`, and all variable/beta-originated
-  nested composition branches.
+- lamComp, non-identity: complete as `ParStep.sigma_comp_lamcomp`.
+- lamCompId: complete as `ParStep.sigma_comp_lamcomp_id`.
+- variable composition-derived cases: incomplete.
+- beta1-derived case: incomplete.
+- beta2-derived case: incomplete.
+- helper theorem: `sigma_comp_lamcomp_id` uses the inner composition result
+  and rewrites its identity target with `sigma_normalize_comp_id_left`.
+- recursion used: the inner environment result is supplied as `ih`.
+- normalization lemmas used: `sigma_normalize_comp_comp`,
+  `sigmaNormalize_comp_right_normalize`, and `sigma_normalize_comp_id_left`.
 - added inversion lemmas: none.
 - added length lemmas: none; existing `Trm.length_comp_sub_lamcomp_arg` is the
   intended decrease proof when assembling the outer strong induction.
