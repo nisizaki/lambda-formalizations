@@ -585,6 +585,74 @@ other five constructors.  Its constructor evaluation lemmas are reused here.
 - The remaining work is the composition-compatibility lemmas and the
   constructor-by-constructor proof of `ParStep V U.star`.
 
+## Lemma 3.11 composition compatibility
+
+### Isabelle statement
+
+`par_step U U'` and `par_step V V'` imply
+`par_step (sigma_normalize (TComp U V)) (sigma_normalize (TComp U' V'))`.
+
+### Lean statement
+
+The intended final theorem is `ParStep.sigma_comp` with the same two premises
+and conclusion.  It is not yet assembled from the completed cases.
+
+### Supporting lemmas
+
+- Complete sigma equations: `sigmaNormalize_comp_right_normalize`,
+  `sigmaNormalize_comp_left_normalize`, and the `sigma_normalize_comp_*`
+  constructor equations.
+- Complete parallel cases: `ParStep.sigma_comp_id`, `sigma_comp_ext`,
+  `sigma_comp_lam`, and `sigma_comp_app`.
+- Complete inversion lemmas: `ParStep.id_cases`, `var_cases`, `ext_cases`,
+  `lam_cases`, `comp_lam_cases`, and `comp_var_cases`.
+
+### Induction measure
+
+The Isabelle proof uses strong induction on `Trm.length (.comp U V)`.  Its
+recursive calls are on distributed extension/application subcompositions and
+the environment subcomposition of lambda/variable composition.
+
+### Completed cases
+
+Identity, extension, lambda composition, and ordinary application (the
+`ParApp` branch once its two induction hypotheses are supplied).
+
+### Remaining cases
+
+Variable composition requires the recursive `not_ext`/extension split;
+nested composition and the beta1/beta2 branches then reuse those recursive
+results.  The top-level strong-induction theorem remains to be added.
+
+## Lemma 3.13 star theorem
+
+### Isabelle statement
+
+`par_step U V` implies `par_step V (term_star U)`.
+
+### Lean statement
+
+The intended theorem is `ParStep.to_star`; it is not yet implemented.
+
+### Dependencies
+
+`term_star_sigma_normal`, `sigma_normalize_term_star_eq`, and the complete
+`ParStep.sigma_comp` theorem.
+
+### Completed cases
+
+Only the prerequisites above.
+
+### Remaining cases
+
+All constructor cases, especially lambda/variable composition and beta1/beta2.
+
+## Parallel strong confluence
+
+Not started.  Once `ParStep.to_star` is available, the common successor for
+two one-step branches is `Trm.star` of their common source, exactly as in the
+Isabelle proof.
+
 ## Current goal
 
 Port the sigma-normalization congruence lemmas required for the parallel
