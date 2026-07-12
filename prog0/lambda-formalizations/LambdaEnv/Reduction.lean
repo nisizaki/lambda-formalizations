@@ -651,6 +651,161 @@ theorem SigmaLocalPeak.distApp {M₁ M₂ N P : Trm V}
   | compLeft _ h => exact SigmaLocalPeak.distApp_inner h
   | compRight _ h => exact SigmaLocalPeak.distApp_right h
 
+theorem SigmaLocalPeak.ass_inner_ass {L M N P : Trm V} :
+    Joinable SigmaStep
+      (.comp (.comp L M) (.comp N P))
+      (.comp (.comp L (.comp M N)) P) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.ass L M (.comp N P)))
+    (SigmaSteps.trans
+      (SigmaStep.toSteps (SigmaStep.ass L (.comp M N) P))
+      (SigmaStep.toSteps (SigmaStep.compRight L (SigmaStep.ass M N P))))
+
+theorem SigmaLocalPeak.ass_inner_idLeft {M N : Trm V} :
+    Joinable SigmaStep (.comp .id (.comp M N)) (.comp M N) :=
+  SigmaJoin.step_left (SigmaStep.idLeft (.comp M N))
+
+theorem SigmaLocalPeak.ass_inner_idRight {L N : Trm V} :
+    Joinable SigmaStep (.comp L (.comp .id N)) (.comp L N) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.compRight L (SigmaStep.idLeft N)))
+    (SigmaSteps.refl _)
+
+theorem SigmaLocalPeak.ass_inner_distExt {L M N P : Trm V} {x : V} :
+    Joinable SigmaStep
+      (.comp (.ext L x M) (.comp N P))
+      (.comp (.ext (.comp L N) x (.comp M N)) P) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.distExt L x M (.comp N P)))
+    (SigmaSteps.trans
+      (SigmaStep.toSteps (SigmaStep.distExt (.comp L N) x (.comp M N) P))
+      (SigmaSteps.trans
+        (SigmaStep.toSteps
+          (SigmaStep.extLeft x (.comp (.comp M N) P) (SigmaStep.ass L N P)))
+        (SigmaStep.toSteps
+          (SigmaStep.extRight (.comp L (.comp N P)) x (SigmaStep.ass M N P)))))
+
+theorem SigmaLocalPeak.ass_inner_varRef {M N P : Trm V} {x : V} :
+    Joinable SigmaStep
+      (.comp (.var x) (.comp (.ext M x N) P))
+      (.comp M P) :=
+  SigmaJoin.steps
+    (SigmaSteps.trans
+      (SigmaStep.toSteps (SigmaStep.compRight (.var x) (SigmaStep.distExt M x N P)))
+      (SigmaStep.toSteps (SigmaStep.varRef x (.comp M P) (.comp N P))))
+    (SigmaSteps.refl _)
+
+theorem SigmaLocalPeak.ass_inner_varSkip {M N P : Trm V} {x y : V} (hne : x ≠ y) :
+    Joinable SigmaStep
+      (.comp (.var y) (.comp (.ext M x N) P))
+      (.comp (.comp (.var y) N) P) :=
+  SigmaJoin.steps
+    (SigmaSteps.trans
+      (SigmaStep.toSteps (SigmaStep.compRight (.var y) (SigmaStep.distExt M x N P)))
+      (SigmaStep.toSteps (SigmaStep.varSkip (.comp M P) x (.comp N P) y hne)))
+    (SigmaStep.toSteps (SigmaStep.ass (.var y) N P))
+
+theorem SigmaLocalPeak.ass_inner_distApp {M₁ M₂ N P : Trm V} :
+    Joinable SigmaStep
+      (.comp (.app M₁ M₂) (.comp N P))
+      (.comp (.app (.comp M₁ N) (.comp M₂ N)) P) :=
+  SigmaJoin.steps
+    (SigmaStep.toSteps (SigmaStep.distApp M₁ M₂ (.comp N P)))
+    (SigmaSteps.trans
+      (SigmaStep.toSteps (SigmaStep.distApp (.comp M₁ N) (.comp M₂ N) P))
+      (SigmaSteps.trans
+        (SigmaStep.toSteps
+          (SigmaStep.appLeft (.comp (.comp M₂ N) P) (SigmaStep.ass M₁ N P)))
+        (SigmaStep.toSteps
+          (SigmaStep.appRight (.comp M₁ (.comp N P)) (SigmaStep.ass M₂ N P)))))
+
+theorem SigmaLocalPeak.ass_inner_root {L M LM N : Trm V}
+    (root : SigmaRootStep (.comp L M) LM) :
+    Joinable SigmaStep (.comp L (.comp M N)) (.comp LM N) := by
+  cases root with
+  | ass _ _ _ => exact SigmaLocalPeak.ass_inner_ass
+  | idLeft _ => exact SigmaLocalPeak.ass_inner_idLeft
+  | idRight _ => exact SigmaLocalPeak.ass_inner_idRight
+  | distExt _ _ _ _ => exact SigmaLocalPeak.ass_inner_distExt
+  | varRef _ _ _ => exact SigmaLocalPeak.ass_inner_varRef
+  | varSkip _ _ _ _ hne => exact SigmaLocalPeak.ass_inner_varSkip hne
+  | distApp _ _ _ => exact SigmaLocalPeak.ass_inner_distApp
+
+theorem SigmaLocalPeak.ass_inner {L M LM N : Trm V}
+    (step : SigmaStep (.comp L M) LM) :
+    Joinable SigmaStep (.comp L (.comp M N)) (.comp LM N) := by
+  cases step with
+  | ass _ _ _ => exact SigmaLocalPeak.ass_inner_ass
+  | idLeft _ => exact SigmaLocalPeak.ass_inner_idLeft
+  | idRight _ => exact SigmaLocalPeak.ass_inner_idRight
+  | distExt _ _ _ _ => exact SigmaLocalPeak.ass_inner_distExt
+  | varRef _ _ _ => exact SigmaLocalPeak.ass_inner_varRef
+  | varSkip _ _ _ _ hne => exact SigmaLocalPeak.ass_inner_varSkip hne
+  | distApp _ _ _ => exact SigmaLocalPeak.ass_inner_distApp
+  | compLeft _ h => exact SigmaLocalPeak.ass_left h
+  | compRight _ h => exact SigmaLocalPeak.ass_mid h
+
+theorem SigmaLocalPeak.ass {L M N P : Trm V}
+    (step : SigmaStep (.comp (.comp L M) N) P) :
+    Joinable SigmaStep (.comp L (.comp M N)) P := by
+  cases step with
+  | ass _ _ _ => exact SigmaJoin.refl _
+  | idRight _ =>
+      exact SigmaJoin.steps (SigmaSteps.comp_idRight_in_compRight L M) (SigmaSteps.refl _)
+  | compLeft _ h => exact SigmaLocalPeak.ass_inner h
+  | compRight _ h => exact SigmaLocalPeak.ass_right h
+
+theorem SigmaLocalPeak.comp {M N U W : Trm V}
+    (leftPeak : ∀ {P Q : Trm V}, SigmaStep M P → SigmaStep M Q → Joinable SigmaStep P Q)
+    (rightPeak : ∀ {P Q : Trm V}, SigmaStep N P → SigmaStep N Q → Joinable SigmaStep P Q)
+    (left : SigmaStep (.comp M N) U) (right : SigmaStep (.comp M N) W) :
+    Joinable SigmaStep U W := by
+  cases left with
+  | ass L M N => exact SigmaLocalPeak.ass right
+  | idLeft M => exact SigmaLocalPeak.idLeft right
+  | idRight M => exact SigmaLocalPeak.idRight right
+  | distExt L x M N => exact SigmaLocalPeak.distExt right
+  | varRef x M N => exact SigmaLocalPeak.varRef right
+  | varSkip M x N y hne => exact SigmaLocalPeak.varSkip hne right
+  | distApp M₁ M₂ N => exact SigmaLocalPeak.distApp right
+  | compLeft R leftStep =>
+      cases right with
+      | ass L M N => exact SigmaJoin.symm (SigmaLocalPeak.ass_inner leftStep)
+      | idLeft M => exact SigmaStep.no_id leftStep
+      | idRight M => exact SigmaJoin.symm (SigmaLocalPeak.idRight_arg leftStep)
+      | distExt L x M N => exact SigmaJoin.symm (SigmaLocalPeak.distExt_inner leftStep)
+      | varRef x M N => exact SigmaStep.no_var leftStep
+      | varSkip M x N y hne => exact SigmaStep.no_var leftStep
+      | distApp M₁ M₂ N => exact SigmaJoin.symm (SigmaLocalPeak.distApp_inner leftStep)
+      | compLeft _ rightStep => exact SigmaJoin.comp_left (leftPeak leftStep rightStep)
+      | compRight _ rightStep => exact SigmaLocalPeak.comp_left_right leftStep rightStep
+  | compRight L leftStep =>
+      cases right with
+      | ass L M N => exact SigmaJoin.symm (SigmaLocalPeak.ass_right leftStep)
+      | idLeft M => exact SigmaJoin.symm (SigmaLocalPeak.idLeft_arg leftStep)
+      | idRight M => exact SigmaStep.no_id leftStep
+      | distExt L x M N => exact SigmaJoin.symm (SigmaLocalPeak.distExt_right leftStep)
+      | varRef x M N => exact SigmaJoin.symm (SigmaLocalPeak.varRef_inner leftStep)
+      | varSkip M x N y hne => exact SigmaJoin.symm (SigmaLocalPeak.varSkip_inner hne leftStep)
+      | distApp M₁ M₂ N => exact SigmaJoin.symm (SigmaLocalPeak.distApp_right leftStep)
+      | compLeft _ rightStep => exact SigmaJoin.symm (SigmaLocalPeak.comp_left_right rightStep leftStep)
+      | compRight _ rightStep => exact SigmaJoin.comp_right (rightPeak leftStep rightStep)
+
+theorem SigmaStep.local_peak_joinable {M N₁ N₂ : Trm V}
+    (left : SigmaStep M N₁) (right : SigmaStep M N₂) :
+    Joinable SigmaStep N₁ N₂ := by
+  induction M generalizing N₁ N₂ with
+  | var x => exact SigmaLocalPeak.var left right
+  | lam x M ih => exact SigmaLocalPeak.lam ih left right
+  | app M N ihM ihN => exact SigmaLocalPeak.app ihM ihN left right
+  | id => exact SigmaLocalPeak.id left right
+  | ext M x N ihM ihN => exact SigmaLocalPeak.ext ihM ihN left right
+  | comp M N ihM ihN => exact SigmaLocalPeak.comp ihM ihN left right
+
+theorem SigmaStep.locallyConfluent : LocallyConfluent (@SigmaStep V) :=
+  locallyConfluent_of_local_peaks (fun _ _ _ left right =>
+    SigmaStep.local_peak_joinable left right)
+
 inductive BetaStep : Trm V → Trm V → Prop where
   | beta1 (x : V) (M N L : Trm V) :
       BetaStep (.app (.comp (.lam x M) N) L) (.comp M (.ext L x N))

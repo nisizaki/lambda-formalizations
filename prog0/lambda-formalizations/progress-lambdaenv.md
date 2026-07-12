@@ -176,6 +176,7 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `SigmaRootStep.local_peak_joinable`.
 - `SigmaLocalPeak.id`, `SigmaLocalPeak.var`.
 - `SigmaLocalPeak.lam`, `SigmaLocalPeak.app`, `SigmaLocalPeak.ext`.
+- `SigmaLocalPeak.comp`.
 - Root/compatibility basic peaks:
   `SigmaLocalPeak.ass_left`, `ass_mid`, `ass_right`,
   `idLeft_arg`, `idRight_arg`,
@@ -188,6 +189,13 @@ completed slices are `section "Raw terms and length"`, most basic material from
   `idLeft`, `idRight`, `varRef`, `varSkip`,
   `distExt_inner`, `distExt`, `distApp_inner`, `distApp`.
 - Inversion helper: `SigmaStep.app_cases`.
+- Ass nested peaks:
+  `SigmaLocalPeak.ass_inner_ass`, `ass_inner_idLeft`,
+  `ass_inner_idRight`, `ass_inner_distExt`, `ass_inner_varRef`,
+  `ass_inner_varSkip`, `ass_inner_distApp`, `ass_inner_root`,
+  `ass_inner`, and `ass`.
+- Whole local peak and local confluence:
+  `SigmaStep.local_peak_joinable`, `SigmaStep.locallyConfluent`.
 - `SigmaStep.toWeakStep`.
 - `BetaStep.toWeakStep`.
 - `WeakStep.sigma_or_beta`.
@@ -203,13 +211,9 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 ## In progress
 
-- Continue `Reduction relations` with local confluence support:
-  nested root-vs-compatibility peaks under associativity, extension
-  distribution, and application distribution, plus packaged `Ass`
-  root-vs-step lemmas.
-- Continue `Sigma reduction` with joinability lemmas for root-vs-compatibility
-  peaks, then connect local confluence to Newman-style confluence before adding
-  unique sigma normalization.
+- Continue after sigma local confluence by researching or proving Newman-style
+  confluence, then derive sigma confluence, unique sigma normal forms, and
+  `sigmaNormalize`.
 
 ## Reduction relations audit
 
@@ -240,14 +244,10 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 - Joinable wrapper corresponding to `sigma_root_step_local_peak_joinablep`
   can now be a direct use of `SigmaRootStep.local_peak_joinable`.
-- Nested root-vs-compatibility peak lemmas from
-  `sigma_peak_Ass_inner_Ass` through `sigma_peak_Ass`, plus packaging lemmas
-  `sigma_root_vs_step_peak_joinable` and `sigma_step_vs_root_peak_joinable`.
-- Full step/step local peak decomposition:
-  `sigma_step_local_peak_from_AppL`, `..._AppR`, `..._Lam`,
-  `..._CompL`, `..._CompR`, `..._ExtL`, `..._ExtR`,
-  and `sigma_step_local_peak_joinable`.
-- Final local confluence theorem `sigma_step_locally_confluent`.
+- The Isabelle intermediate wrappers `sigma_root_vs_step_peak_joinable`,
+  `sigma_step_vs_root_peak_joinable`, and `sigma_step_local_peak_from_*` are
+  represented in Lean by the constructor-specific `SigmaLocalPeak.*` lemmas and
+  the structural theorem `SigmaStep.local_peak_joinable`.
 
 ### Compatibility and local peak proof plan
 
@@ -274,10 +274,34 @@ completed slices are `section "Raw terms and length"`, most basic material from
   associativity left/middle/right, id-left/id-right argument,
   extension distribution left/middle/right, var-ref left/right, var-skip
   left/right, and application distribution left/middle/right.
+- Ass nested peaks:
+  outer Ass against inner Ass, IdL, IdR, DistExt, VarRef, VarSkip, and DApp;
+  these are packaged through `SigmaLocalPeak.ass_inner_root`,
+  `SigmaLocalPeak.ass_inner`, and `SigmaLocalPeak.ass`.
+- constructor-level comp peaks: `SigmaLocalPeak.comp`.
+
+## Completed Ass nested peaks
+
+- `sigma_peak_Ass_inner_Ass` ↔ `SigmaLocalPeak.ass_inner_ass`.
+- `sigma_peak_Ass_inner_IdL` ↔ `SigmaLocalPeak.ass_inner_idLeft`.
+- `sigma_peak_Ass_inner_IdR` ↔ `SigmaLocalPeak.ass_inner_idRight`.
+- `sigma_peak_Ass_inner_DExtn` ↔ `SigmaLocalPeak.ass_inner_distExt`.
+- `sigma_peak_Ass_inner_VarRef` ↔ `SigmaLocalPeak.ass_inner_varRef`.
+- `sigma_peak_Ass_inner_VarSkip` ↔ `SigmaLocalPeak.ass_inner_varSkip`.
+- `sigma_peak_Ass_inner_DApp` ↔ `SigmaLocalPeak.ass_inner_distApp`.
+- `sigma_peak_Ass_inner_root` ↔ `SigmaLocalPeak.ass_inner_root`.
+- `sigma_peak_Ass_inner` ↔ `SigmaLocalPeak.ass_inner`.
+- `sigma_peak_Ass` ↔ `SigmaLocalPeak.ass`.
+
+## Completed local confluence results
+
+- `sigma_step_local_peak_joinable` ↔ `SigmaStep.local_peak_joinable`.
+- `sigma_step_locally_confluent` ↔ `SigmaStep.locallyConfluent`.
 
 ## Completed confluence results
 
-- None yet.  Local confluence and Newman-style confluence are still pending.
+- Local confluence is complete: `SigmaStep.locallyConfluent`.
+- Newman-style global confluence is still pending.
 
 ## Newman lemma design
 
@@ -375,6 +399,18 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `sigma_peak_DExtn` ↔ `SigmaLocalPeak.distExt`
 - `sigma_peak_DApp_inner` ↔ `SigmaLocalPeak.distApp_inner`
 - `sigma_peak_DApp` ↔ `SigmaLocalPeak.distApp`
+- `sigma_peak_Ass_inner_Ass` ↔ `SigmaLocalPeak.ass_inner_ass`
+- `sigma_peak_Ass_inner_IdL` ↔ `SigmaLocalPeak.ass_inner_idLeft`
+- `sigma_peak_Ass_inner_IdR` ↔ `SigmaLocalPeak.ass_inner_idRight`
+- `sigma_peak_Ass_inner_DExtn` ↔ `SigmaLocalPeak.ass_inner_distExt`
+- `sigma_peak_Ass_inner_VarRef` ↔ `SigmaLocalPeak.ass_inner_varRef`
+- `sigma_peak_Ass_inner_VarSkip` ↔ `SigmaLocalPeak.ass_inner_varSkip`
+- `sigma_peak_Ass_inner_DApp` ↔ `SigmaLocalPeak.ass_inner_distApp`
+- `sigma_peak_Ass_inner_root` ↔ `SigmaLocalPeak.ass_inner_root`
+- `sigma_peak_Ass_inner` ↔ `SigmaLocalPeak.ass_inner`
+- `sigma_peak_Ass` ↔ `SigmaLocalPeak.ass`
+- `sigma_step_local_peak_joinable` ↔ `SigmaStep.local_peak_joinable`
+- `sigma_step_locally_confluent` ↔ `SigmaStep.locallyConfluent`
 
 ## Build status
 
