@@ -398,6 +398,7 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `rtranclp beta_step` / `beta_steps` ↔ `BetaSteps`
 - `weak_step` ↔ `WeakStep`
 - `rtranclp weak_step` / `weak_steps` ↔ `WeakSteps`
+- `par_step` ↔ `ParStep`
 - `joinablep` ↔ `Joinable`
 - `locally_confluentp` ↔ `LocallyConfluent`
 - `normal_form_for` ↔ `NormalFormFor`
@@ -520,33 +521,81 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 ## Parallel reduction rules
 
-| Isabelle | Lean | Side conditions |
-|---|---|---|
-| `ParVar` | pending `ParStep.var` | none |
-| `ParLam` | pending `ParStep.lam` | recursive premise |
-| `ParApp` | pending `ParStep.app` | two recursive premises |
-| `ParId` | pending `ParStep.id` | none |
-| `ParExtn` | pending `ParStep.ext` | two recursive premises |
-| `ParLamComp` | pending | `V ≠ TId`, `V' ≠ TId` |
-| `ParLamCompId` | pending | `par_step V TId`, `V ≠ TId` |
-| `ParVarComp` | pending | `not_ext W`, `not_ext W'`, `W ≠ TId`, `W' ≠ TId` |
-| `ParVarCompOther` | pending | `not_ext W`, `¬ not_ext W'`, `W ≠ TId`, and Isabelle lists `W' ≠ TId` twice |
-| `ParVarCompId` | pending | `par_step W TId`, `not_ext W`, `W ≠ TId` |
-| `ParBeta1` | pending | recursive premises for body and argument |
-| `ParBeta2` | pending | `W ≠ TId` plus recursive premises for body, argument, environment |
+| Isabelle rule | Lean constructor | Side conditions | Status |
+|---|---|---|---|
+| `ParVar` | `ParStep.var` | none | complete |
+| `ParLam` | `ParStep.lam` | recursive premise | complete |
+| `ParApp` | `ParStep.app` | two recursive premises | complete |
+| `ParId` | `ParStep.id` | none | complete |
+| `ParExtn` | `ParStep.ext` | two recursive premises | complete |
+| `ParLamComp` | `ParStep.lamComp` | `V ≠ TId`, `V' ≠ TId` | complete |
+| `ParLamCompId` | `ParStep.lamCompId` | `ParStep V TId`, `V ≠ TId` | complete |
+| `ParVarComp` | `ParStep.varComp` | `not_ext W`, `not_ext W'`, `W ≠ TId`, `W' ≠ TId` | complete |
+| `ParVarCompOther` | `ParStep.varCompOther` | `not_ext W`, `¬ not_ext W'`, `W ≠ TId`, `W' ≠ TId` | complete |
+| `ParVarCompId` | `ParStep.varCompId` | `ParStep W TId`, `not_ext W`, `W ≠ TId` | complete |
+| `ParBeta1` | `ParStep.beta1` | recursive premises for body and argument | complete |
+| `ParBeta2` | `ParStep.beta2` | `W ≠ TId` and recursive body, argument, environment premises | complete |
+
+`not_ext` was already defined in `SigmaNormalization.lean` exactly as the
+Isabelle predicate: it is false precisely for `Trm.ext _ _ _` and true for the
+other five constructors.  Its constructor evaluation lemmas are reused here.
+
+## Parallel reduction source normality
+
+- `ParStep.source_normal` is proved by induction on the twelve `ParStep`
+  constructors.
+- The composition cases use `sigma_normal_TComp_lam_iff` and
+  `sigma_normal_TComp_var_iff`; beta sources use the corresponding app and
+  lambda normality lemmas.
+
+## Parallel reduction target normality
+
+- `ParStep.target_normal` is proved by the same constructor induction.
+- The three normalized target rules (`varCompOther`, `beta1`, `beta2`) close
+  directly with `sigmaNormalize_normal`.
+- `ParStep.normal` packages both directions.
+
+## Parallel reduction reflexivity
+
+- `ParStep.refl` proves `ParStep M M` for every `SigmaNormal M`.
+- The proof uses strong induction on `Trm.length`.  The composition case uses
+  `sigma_normal_TComp_cases_for_par_refl`, then applies `lamComp` or `varComp`
+  with the original non-identity and `not_ext` side conditions unchanged.
+
+## Inversion lemmas
+
+- None added in this slice.  The first downstream composition proof will
+  determine the shape needed for a reusable `ParStep.comp_cases`; adding a
+  broad, speculative inversion API now would duplicate direct constructor
+  induction without a demonstrated caller.
+
+## Requirements for composition lemma
+
+- Still needed: `sigma_normalize_comp_right_normalize` and
+  `sigma_normalize_comp_left_normalize`, followed by the constructor-specific
+  composition normalizations listed in "Remaining sigma lemmas".
+- `ParStep.source_normal`, `ParStep.target_normal`, and `ParStep.refl` are now
+  available as prerequisites.
+
+## Requirements for star theorem
+
+- The star normality prerequisite is complete: `term_star_sigma_normal` and
+  `sigma_normalize_term_star_eq`.
+- The remaining work is the composition-compatibility lemmas and the
+  constructor-by-constructor proof of `ParStep V U.star`.
 
 ## Current goal
 
-Complete the next sigma composition-normalization lemmas required before the
-parallel reduction congruence and strong-confluence proofs.
+Port the sigma-normalization congruence lemmas required for the parallel
+composition lemma, then prove the star theorem (Lemma 3.13).
 
 ## Remaining work
 
 - Port the remaining sigma lemmas listed above, beginning with normalization
   under composition.
-- Define `ParStep` exactly as surveyed, then establish its source/target
-  sigma-normality lemmas.
-- Continue with Lemmas 3.11--3.13 and beta modulo sigma only after those
+- Prove the remaining normalization-under-composition lemmas.
+- Prove Lemma 3.11 composition compatibility, then Lemma 3.13 to-star.
+- Strong confluence and beta modulo sigma remain out of scope until those
   prerequisites build.
 
 ## Build status

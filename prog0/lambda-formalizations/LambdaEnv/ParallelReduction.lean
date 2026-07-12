@@ -90,4 +90,140 @@ theorem sigma_normalize_term_star_eq {U : Trm V} (normal : SigmaNormal U) :
     sigmaNormalize U.star = U.star :=
   sigmaNormalize_eq_of_normal (term_star_sigma_normal normal)
 
+inductive ParStep : Trm V → Trm V → Prop where
+  | var (x : V) :
+      ParStep (.var x) (.var x)
+  | lam :
+      ParStep U U' → ParStep (.lam x U) (.lam x U')
+  | app :
+      ParStep U U' → ParStep V V' → ParStep (.app U V) (.app U' V')
+  | id :
+      ParStep (.id : Trm V) .id
+  | ext :
+      ParStep U U' → ParStep V V' → ParStep (.ext U x V) (.ext U' x V')
+  | lamComp :
+      ParStep U U' → ParStep V V' → V ≠ .id → V' ≠ .id →
+        ParStep (.comp (.lam x U) V) (.comp (.lam x U') V')
+  | lamCompId :
+      ParStep U U' → ParStep V .id → V ≠ .id →
+        ParStep (.comp (.lam x U) V) (.lam x U')
+  | varComp :
+      ParStep W W' → not_ext W → not_ext W' → W ≠ .id → W' ≠ .id →
+        ParStep (.comp (.var x) W) (.comp (.var x) W')
+  | varCompOther :
+      ParStep W W' → not_ext W → ¬ not_ext W' → W ≠ .id → W' ≠ .id →
+        ParStep (.comp (.var x) W) (sigmaNormalize (.comp (.var x) W'))
+  | varCompId :
+      ParStep W .id → not_ext W → W ≠ .id →
+        ParStep (.comp (.var x) W) (.var x)
+  | beta1 :
+      ParStep U U' → ParStep V V' →
+        ParStep (.app (.lam x U) V)
+          (sigmaNormalize (.comp U' (.ext V' x .id)))
+  | beta2 :
+      W ≠ .id → ParStep U U' → ParStep V V' → ParStep W W' →
+        ParStep (.app (.comp (.lam x U) W) V)
+          (sigmaNormalize (.comp U' (.ext V' x W')))
+
+theorem ParStep.source_normal {U V : Trm V} (h : ParStep U V) : SigmaNormal U := by
+  induction h with
+  | var x => exact sigma_normal_TVar x
+  | lam h ih => exact sigma_normal_lam ih
+  | app hU hV ihU ihV => exact sigma_normal_app ihU ihV
+  | id => exact sigma_normal_TId
+  | ext hU hV ihU ihV => exact sigma_normal_ext ihU ihV
+  | lamComp hU hV hVne hV'ne ihU ihV =>
+      exact sigma_normal_TComp_lam_iff.mpr ⟨ihU, ihV, hVne⟩
+  | lamCompId hU hV hVne ihU ihV =>
+      exact sigma_normal_TComp_lam_iff.mpr ⟨ihU, ihV, hVne⟩
+  | varComp hW hNotExt hNotExt' hWne hW'ne ihW =>
+      exact sigma_normal_TComp_var_iff.mpr ⟨ihW, hNotExt, hWne⟩
+  | varCompOther hW hNotExt hNotExt' hWne hW'ne ihW =>
+      exact sigma_normal_TComp_var_iff.mpr ⟨ihW, hNotExt, hWne⟩
+  | varCompId hW hNotExt hWne ihW =>
+      exact sigma_normal_TComp_var_iff.mpr ⟨ihW, hNotExt, hWne⟩
+  | beta1 hU hV ihU ihV =>
+      exact sigma_normal_app (sigma_normal_lam ihU) ihV
+  | beta2 hWne hU hV hW ihU ihV ihW =>
+      exact sigma_normal_app (sigma_normal_TComp_lam_iff.mpr ⟨ihU, ihW, hWne⟩) ihV
+
+theorem ParStep.target_normal {U V : Trm V} (h : ParStep U V) : SigmaNormal V := by
+  induction h with
+  | var x => exact sigma_normal_TVar x
+  | lam h ih => exact sigma_normal_lam ih
+  | app hU hV ihU ihV => exact sigma_normal_app ihU ihV
+  | id => exact sigma_normal_TId
+  | ext hU hV ihU ihV => exact sigma_normal_ext ihU ihV
+  | lamComp hU hV hVne hV'ne ihU ihV =>
+      exact sigma_normal_TComp_lam_iff.mpr ⟨ihU, ihV, hV'ne⟩
+  | lamCompId hU hV hVne ihU ihV => exact sigma_normal_lam ihU
+  | varComp hW hNotExt hNotExt' hWne hW'ne ihW =>
+      exact sigma_normal_TComp_var_iff.mpr ⟨ihW, hNotExt', hW'ne⟩
+  | varCompOther hW hNotExt hNotExt' hWne hW'ne ihW =>
+      exact sigmaNormalize_normal _
+  | varCompId hW hNotExt hWne ihW => exact sigma_normal_TVar _
+  | beta1 hU hV ihU ihV => exact sigmaNormalize_normal _
+  | beta2 hWne hU hV hW ihU ihV ihW => exact sigmaNormalize_normal _
+
+theorem ParStep.normal {U V : Trm V} (h : ParStep U V) : SigmaNormal U ∧ SigmaNormal V :=
+  ⟨h.source_normal, h.target_normal⟩
+
+theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
+  let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
+  have aux : ∀ n, P n := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | h n ih =>
+        intro M length_eq normal
+        cases M with
+        | var x => exact ParStep.var x
+        | lam x U =>
+            have nU : SigmaNormal U := sigma_normal_TLam_iff.mp normal
+            have lenU : Trm.length U < n := by
+              rw [← length_eq]
+              simp [Trm.length]
+              nlinarith [Trm.length_pos U]
+            exact ParStep.lam (ih (Trm.length U) lenU U rfl nU)
+        | app U V =>
+            have nUV := sigma_normal_TApp_iff.mp normal
+            have lenU : Trm.length U < n := by
+              rw [← length_eq]
+              simp [Trm.length]
+            have lenV : Trm.length V < n := by
+              rw [← length_eq]
+              simp [Trm.length]
+            exact ParStep.app (ih (Trm.length U) lenU U rfl nUV.1)
+              (ih (Trm.length V) lenV V rfl nUV.2)
+        | id => exact ParStep.id
+        | ext U x V =>
+            have nUV := sigma_normal_TExt_iff.mp normal
+            have lenU : Trm.length U < n := by
+              rw [← length_eq]
+              simp [Trm.length]
+            have lenV : Trm.length V < n := by
+              rw [← length_eq]
+              simp [Trm.length]
+            exact ParStep.ext (ih (Trm.length U) lenU U rfl nUV.1)
+              (ih (Trm.length V) lenV V rfl nUV.2)
+        | comp A B =>
+            rcases sigma_normal_TComp_cases_for_par_refl normal with
+              ⟨x, U, hA, nU, nB, hBne⟩ | ⟨x, hA, nB, hNotExt, hBne⟩
+            · subst A
+              have lenU : Trm.length U < n := by
+                rw [← length_eq]
+                simp [Trm.length]
+                nlinarith [Trm.length_pos U, Trm.length_pos B]
+              have lenB : Trm.length B < n := by
+                rw [← length_eq]
+                exact Trm.length_right_lt_comp (.lam x U) B
+              exact ParStep.lamComp (ih (Trm.length U) lenU U rfl nU)
+                (ih (Trm.length B) lenB B rfl nB) hBne hBne
+            · subst A
+              have lenB : Trm.length B < n := by
+                rw [← length_eq]
+                exact Trm.length_right_lt_comp (.var x) B
+              exact ParStep.varComp (ih (Trm.length B) lenB B rfl nB)
+                hNotExt hNotExt hBne hBne
+  exact aux (Trm.length M) M rfl normal
+
 end LambdaEnv
