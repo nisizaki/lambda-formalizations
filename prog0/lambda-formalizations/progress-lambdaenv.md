@@ -649,7 +649,8 @@ results.  The top-level strong-induction theorem remains to be added.
 - varCompOther: complete through the generic `ParStep.sigma_comp_varcomp`.
 - varCompId: complete through the generic `ParStep.sigma_comp_varcomp`.
 - beta1-derived case: outer-identity subcase complete as
-  `ParStep.sigma_comp_beta1_id`; general outer-environment case remains.
+  `ParStep.sigma_comp_beta1_id`; general case complete as
+  `ParStep.sigma_comp_beta1`.
 - beta2-derived case: incomplete.
 - helper theorem: `sigma_comp_lamcomp_id` uses the inner composition result
   and rewrites its identity target with `sigma_normalize_comp_id_left`.

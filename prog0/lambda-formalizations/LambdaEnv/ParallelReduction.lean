@@ -394,6 +394,42 @@ theorem ParStep.sigma_comp_beta1_id {U U' N N' : Trm V} {x : V}
     sigma_normalize_comp_id_right (sigmaNormalize_normal _)]
   exact ParStep.beta1 hU hN
 
+theorem ParStep.sigma_comp_beta1 {U U' A A' E E' : Trm V} {x : V}
+    (hU : ParStep U U') (hA : ParStep A A') (hE : ParStep E E')
+    (ihLam : ParStep (sigmaNormalize (.comp (.lam x U) E))
+      (sigmaNormalize (.comp (.lam x U') E')))
+    (ihArg : ParStep (sigmaNormalize (.comp A E))
+      (sigmaNormalize (.comp A' E'))) :
+    ParStep (sigmaNormalize (.comp (.app (.lam x U) A) E))
+      (sigmaNormalize (.comp (sigmaNormalize (.comp U' (.ext A' x .id))) E')) := by
+  by_cases hEid : E = .id
+  · subst E
+    have hE'id : E' = .id := hE.id_cases
+    subst E'
+    exact ParStep.sigma_comp_beta1_id hU hA
+  · by_cases hE'id : E' = .id
+    · subst E'
+      have hTarget : sigmaNormalize (.comp (sigmaNormalize (.comp U' (.ext A' x .id))) .id) =
+          sigmaNormalize (.comp U' (.ext A' x .id)) :=
+        sigma_normalize_comp_beta1_target_id hU.target_normal hA.target_normal
+      rw [sigma_normalize_comp_app (sigma_normal_lam hU.source_normal) hA.source_normal hE.source_normal,
+        sigma_normalize_comp_lam hU.source_normal hE.source_normal hEid, hTarget]
+      have hArg' : sigmaNormalize (.comp A' .id) = A' :=
+        sigma_normalize_comp_id_right hA.target_normal
+      have argStep : ParStep (sigmaNormalize (.comp A E)) A' := by
+        rw [← hArg']
+        exact ihArg
+      exact ParStep.beta2 hEid hU argStep hE
+    · have lhs : sigmaNormalize (.comp (.app (.lam x U) A) E) =
+        .app (.comp (.lam x U) E) (sigmaNormalize (.comp A E)) := by
+        rw [sigma_normalize_comp_app (sigma_normal_lam hU.source_normal) hA.source_normal hE.source_normal,
+          sigma_normalize_comp_lam hU.source_normal hE.source_normal hEid]
+      have rhs : sigmaNormalize (.comp (sigmaNormalize (.comp U' (.ext A' x .id))) E') =
+        sigmaNormalize (.comp U' (.ext (sigmaNormalize (.comp A' E')) x E')) :=
+        sigma_normalize_comp_beta1_target_non_id hU.target_normal hA.target_normal hE.target_normal hE'id
+      rw [lhs, rhs]
+      exact ParStep.beta2 hEid hU ihArg hE
+
 theorem ParStep.refl {M : Trm V} (normal : SigmaNormal M) : ParStep M M := by
   let P : Nat → Prop := fun n => ∀ M : Trm V, Trm.length M = n → SigmaNormal M → ParStep M M
   have aux : ∀ n, P n := by
