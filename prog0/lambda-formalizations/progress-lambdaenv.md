@@ -173,6 +173,7 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `SigmaLocalPeak.app_left_right`.
 - `SigmaLocalPeak.comp_left_right`.
 - `SigmaLocalPeak.ext_left_right`.
+- `SigmaRootStep.local_peak_joinable`.
 - `SigmaStep.toWeakStep`.
 - `BetaStep.toWeakStep`.
 - `WeakStep.sigma_or_beta`.
@@ -189,7 +190,7 @@ completed slices are `section "Raw terms and length"`, most basic material from
 ## In progress
 
 - Continue `Reduction relations` with local confluence support:
-  root-vs-root local peak joinability and the remaining local peak case split.
+  root-vs-compatibility peaks and the remaining local peak case split.
 - Continue `Sigma reduction` with joinability lemmas for root-vs-compatibility
   peaks, then connect local confluence to Newman-style confluence before adding
   unique sigma normalization.
@@ -221,8 +222,8 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 ### Not yet ported
 
-- `sigma_root_step_local_peak_joinable` and
-  `sigma_root_step_local_peak_joinablep`.
+- Joinable wrapper corresponding to `sigma_root_step_local_peak_joinablep`
+  can now be a direct use of `SigmaRootStep.local_peak_joinable`.
 - Root-vs-compatibility peak lemmas beginning with `sigma_peak_Ass_left`,
   `sigma_peak_Ass_mid`, `sigma_peak_Ass_right`, through
   `sigma_root_vs_step_peak_joinable` and
@@ -235,9 +236,9 @@ completed slices are `section "Raw terms and length"`, most basic material from
 
 ### Compatibility and local peak proof plan
 
-- Prove root/root peak joinability first by case analysis on
-  `SigmaRootStep`; witnesses are either reflexive, one sigma step, or one of
-  the existing id-right multi-step helpers.
+- Root/root peak joinability is proved by case analysis on `SigmaRootStep`;
+  witnesses are either reflexive, one sigma step, or one of the existing
+  id-right multi-step helpers.
 - Prove compatibility/compatibility peaks for each constructor.  App, comp, and
   ext two-sided peaks are already present; lam and same-side peaks reduce via
   `SigmaJoin.*` lifting.
@@ -303,6 +304,8 @@ completed slices are `section "Raw terms and length"`, most basic material from
 - `sigma_normal_form` ↔ `SigmaNormalForm`
 - `no_step_rtranclp_eq` ↔ `no_step_reflTransGen_eq`
 - `sigma_normal_form_exists` ↔ `SigmaNormalForm.exists`
+- `sigma_root_step_local_peak_joinable` ↔
+  `SigmaRootStep.local_peak_joinable`
 
 ## Build status
 

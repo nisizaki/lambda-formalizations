@@ -342,6 +342,22 @@ theorem SigmaLocalPeak.ext_left_right {M M' N N' : Trm V} (x : V)
     (SigmaStep.toSteps (SigmaStep.extRight M' x right))
     (SigmaStep.toSteps (SigmaStep.extLeft x N' left))
 
+theorem SigmaRootStep.local_peak_joinable {M N₁ N₂ : Trm V}
+    (left : SigmaRootStep M N₁) (right : SigmaRootStep M N₂) :
+    Joinable SigmaStep N₁ N₂ := by
+  cases left <;> cases right <;> first
+    | exact SigmaJoin.refl _
+    | exact SigmaJoin.steps (SigmaSteps.comp_idRight_in_compRight _ _) (SigmaSteps.refl _)
+    | exact SigmaJoin.steps (SigmaSteps.refl _) (SigmaSteps.comp_idRight_in_compRight _ _)
+    | exact SigmaJoin.steps (SigmaSteps.ext_comp_idRight _ _ _) (SigmaSteps.refl _)
+    | exact SigmaJoin.steps (SigmaSteps.refl _) (SigmaSteps.ext_comp_idRight _ _ _)
+    | exact SigmaJoin.steps (SigmaSteps.app_comp_idRight _ _) (SigmaSteps.refl _)
+    | exact SigmaJoin.steps (SigmaSteps.refl _) (SigmaSteps.app_comp_idRight _ _)
+    | aesop (add safe
+        [SigmaJoin.step_left, SigmaJoin.step_right, SigmaStep.ass, SigmaStep.idLeft,
+          SigmaStep.idRight, SigmaStep.distExt, SigmaStep.varRef, SigmaStep.varSkip,
+          SigmaStep.distApp])
+
 inductive BetaStep : Trm V → Trm V → Prop where
   | beta1 (x : V) (M N L : Trm V) :
       BetaStep (.app (.comp (.lam x M) N) L) (.comp M (.ext L x N))
