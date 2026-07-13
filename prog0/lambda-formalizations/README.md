@@ -4,8 +4,8 @@ This repository contains Lean 4 ports of formalizations previously developed in 
 
 ## Formalizations
 
-* `LambdaEnv`
-* `LambdaPEnv` planned
+* `LambdaEnv` — complete through weak-reduction confluence.
+* `LambdaPEnv` planned.
 
 ## Project Structure
 
@@ -31,6 +31,14 @@ lake exe cache get
 lake build
 ```
 
+For focused checks of the final layers:
+
+```bash
+lake env lean LambdaEnv/ParallelReduction.lean
+lake env lean LambdaEnv/BetaModuloSigma.lean
+lake env lean LambdaEnv/WeakReduction.lean
+```
+
 ## Source Correspondence
 
 The `LambdaEnv` development is based on the Isabelle/HOL theory:
@@ -39,7 +47,26 @@ The `LambdaEnv` development is based on the Isabelle/HOL theory:
 LambdaEnv.thy
 ```
 
-The Lean 4 files are organized by topic, including syntax, reduction relations, normalization, parallel reduction, and confluence.
+The Lean 4 development is a port of the Isabelle/HOL `LambdaEnv.thy` theory.
+Its public entry point is `LambdaEnv.lean`, which imports syntax, reduction
+relations, sigma normalization, parallel reduction, beta modulo sigma, and
+weak reduction in dependency order.
+
+### LambdaEnv coverage
+
+The completed port includes:
+
+* syntax and the `term_length` measure;
+* sigma reduction, its termination and confluence, and `sigmaNormalize`;
+* parallel reduction, Lemma 3.11 composition compatibility, Lemma 3.13's
+  star theorem, and strong confluence;
+* beta modulo sigma, its two-way multi-step correspondence with parallel
+  reduction, and confluence;
+* Hardin's forward-confluence method and confluence of weak reduction.
+
+See `progress-lambdaenv.md` for the detailed Isabelle-to-Lean correspondence
+and the Isabelle-specific auxiliary declarations not exposed as separate Lean
+API.
 
 ## Development Policy
 

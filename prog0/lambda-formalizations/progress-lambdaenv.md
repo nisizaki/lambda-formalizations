@@ -1,6 +1,10 @@
 # LambdaEnv Lean 4 Port Progress
 
-## Current goal
+## Status
+
+LambdaEnv port complete through weak reduction confluence.
+
+## Historical scope
 
 Port `IsabelleSources/LambdaEnv.thy` to Lean 4 in dependency order.  The current
 completed slices are `section "Raw terms and length"`, most basic material from
@@ -969,22 +973,10 @@ Success: `lake env lean LambdaEnv/ParallelReduction.lean` and `lake build`.
 - β modulo σ correspondence and `ParStep` confluence were completed in the
   same follow-up slice after definition commit `c463251`.
 
-## Current goal
+## Completion checkpoint
 
-Continue after the completed parallel star theorem and one-step strong
-confluence result.
-
-## Remaining work
-
-- β modulo σ and `ParStep` confluence are complete.
-- The later Isabelle sections remain: beta modulo σ confluence and Hardin's
-  interpretation for weak reduction.
-
-## Build status
-
-- Command: `lake env lean LambdaEnv/ParallelReduction.lean`
-- Result: success
-- Last checked: 2026-07-13 Asia/Tokyo
+The earlier staged goals above are retained as historical implementation notes.
+Their former remaining beta-modulo-sigma and weak-reduction work is complete.
 
 <!-- Codex continuation checkpoint -->
 
@@ -1058,3 +1050,70 @@ confluence result.
 
 - `lake env lean LambdaEnv/WeakReduction.lean`: success.
 - `lake build`: success.
+
+## Final main theorems
+
+- `SigmaStep.terminating` and `SigmaStep.confluent` establish sigma reduction
+  termination and confluence.
+- `ParStep.sigma_comp` is Isabelle Lemma 3.11.
+- `ParStep.to_star` is Isabelle Lemma 3.13; its target is already sigma-normal
+  by `term_star_sigma_normal` and `sigma_normalize_term_star_eq`.
+- `ParStep.stronglyConfluent` and `ParStep.confluent` establish parallel
+  reduction's diamond property and ordinary confluence.
+- `BetaModSigmaRel.confluent` / `betaModSigma_confluent` is Isabelle Lemma
+  3.15.
+- `theorem_3_16_weakStep_confluent` and `weakStep_confluent` complete the
+  final weak-reduction confluence result.
+
+## Final Isabelle to Lean correspondence
+
+| Isabelle/HOL | Lean 4 | Classification |
+| --- | --- | --- |
+| `trm` | `Trm` | complete |
+| `term_length` | `Trm.length` | complete |
+| `sigma_step`, `sigma_root_step`, `sigma_steps` | `SigmaStep`, `SigmaRootStep`, `SigmaSteps` | complete |
+| `beta_step`, `beta_steps` | `BetaStep`, `BetaSteps` | complete |
+| `weak_step`, `weak_steps` | `WeakStep`, `WeakSteps` | complete |
+| `sigma_normalize` | `sigmaNormalize` | complete |
+| `term_star` | `Trm.star` | complete |
+| `par_step` | `ParStep` | complete |
+| Lemma 3.11 `lemma_3_11_par_step_sigma_comp` | `ParStep.sigma_comp` | complete |
+| Lemma 3.13 `lemma_3_13_par_step_to_star` | `ParStep.to_star` | complete |
+| `beta_mod_sigma_rel` | `BetaModSigmaRel` | complete |
+| Theorem 3.16 `theorem_3_16_weak_step_confluent` | `theorem_3_16_weakStep_confluent` | complete |
+| `weak_step_confluent` | `weakStep_confluent` | complete |
+
+### Full-source audit
+
+- **Complete or same-content under Lean names:** all executable syntax,
+  reduction relations, closures, sigma local-peak infrastructure,
+  termination/confluence/normalization API, star and parallel-reduction
+  results, beta-modulo-sigma correspondence, and the Hardin weak-confluence
+  chain through the last theorem in `LambdaEnv.thy`.
+- **Folded into stronger or differently factored Lean API:** the source's
+  `lemma_3_13_par_step_to_star_normalized` follows from `ParStep.to_star` and
+  `sigma_normalize_term_star_eq`; root beta/sigma helper lemmas and
+  `beta_step_compatible_with_sigma_normalization` are subsumed by
+  `betaStep_to_parStep_normalized`, `parStep_subset_betaModSigmaSteps`, and
+  `weakStep_lift_to_betaModSigma`.
+- **Lean-unnecessary Isabelle-specific abbreviations:** `beta_mod_sigma_fun`
+  and `hardin_R`, `hardin_R1`, `hardin_R2`, `hardin_Rprime` are presentation
+  abbreviations.  Lean uses `BetaModSigmaRel` and explicit parameters instead.
+- **Intentionally not exposed as standalone declarations:** the source's
+  `sigma_normal_form_of_reduct`, `sigma_normal_form_TId`, and detailed
+  `beta_sigma_root_Beta1` / `beta_sigma_root_Beta2` witnesses are represented
+  by the existing `SigmaNormalForm` API and folded proof steps.  They are not
+  needed by the public Lean development.
+- **Deferred optional material:** the syntactic-characterization theorem
+  `lemma_3_7_sigma_normal_syntactic_characterization` is not currently
+  reproduced as a named Lean theorem.  Its corrected predicate is present as
+  `sigma_normal_syntax_corrected`; this omission is independent of all final
+  confluence theorems and is the only substantial optional source result left
+  for a declaration-for-declaration port.
+
+## Remaining optional work
+
+- Add a named Lean proof of Isabelle Lemma 3.7's syntactic characterization.
+- Add convenience aliases for Isabelle-only presentation lemmas if a future
+  client requires their exact statement.  No unfinished result is required for
+  the completed weak-reduction confluence development.

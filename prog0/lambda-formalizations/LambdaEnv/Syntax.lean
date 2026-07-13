@@ -97,11 +97,6 @@ theorem length_comp_sub_varcomp_arg (x : V) (W V' : Trm V) :
     length (.comp W V') < length (.comp (.comp (.var x) W) V') := by
   simp [length]
 
-example (x : V) : length (.var x) = 1 := by simp
-
-example (M N : Trm V) : length (.app M N) = length M + length N + 1 := by
-  simp
-
 end Trm
 
 end LambdaEnv
